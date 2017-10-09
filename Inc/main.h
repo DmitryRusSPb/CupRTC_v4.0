@@ -109,8 +109,11 @@
 #define BUTTON_GPIO_PORT        GPIOB
 #define BUTTON_GPIO_PIN         GPIO_PIN_6
 
+#define LENGTH_OF_LINE_LCD    16
+#define NUMBER_OF_LINES_LCD   2
+
 #define DEMO_TEXT_1             "Демо текст 1"
-#define DEMO_TEXT_2             "Демо текст 2"
+#define DEMO_TEXT_2             "Demo text 2"
 #define LEN_DEMO_TEXT_1         strlen(DEMO_TEXT_1)
 #define LEN_DEMO_TEXT_2         strlen(DEMO_TEXT_2)
 

@@ -162,7 +162,36 @@ void TM_HD44780_Clear(void) {
 void TM_HD44780_Puts(uint8_t x, uint8_t y, uint8_t *str, uint8_t len)
 {
 	uint16_t in2byte;
-	uint8_t lenght = len;
+	uint8_t numOfsymbol = 0;
+	uint8_t *strScore = str;
+	uint8_t length = len;
+
+	// Пробегаемся по тексту и считаем количество символов.
+	// Это требуется делать, так как мы не знаем количество символов,
+	// а знаем только количество байт. Кириллица кодируется двумя байтами,
+	// остальные символы - одним.
+	while(length != 0)
+	{
+		// Если не встретили подобные значения(с этого начинается двухбайтовый
+		// символ кириллицы), то к счётчику символов прибавляем 1, а если встретили,
+		// то прибавляем 2.
+		if((*strScore == 0xD0) || (*strScore == 0xD1))
+		{
+			strScore += 2;
+			length -= 2;
+		}
+		else
+		{
+
+			strScore ++;
+			length --;
+		}
+		numOfsymbol ++;
+	}
+
+	x = (LENGTH_OF_LINE_LCD/2) - (numOfsymbol/2);
+
+	if(x % 2) x--;
 
 	TM_HD44780_CursorSet(x, y);
 
@@ -227,11 +256,13 @@ void TM_HD44780_Puts(uint8_t x, uint8_t y, uint8_t *str, uint8_t len)
 				// , которая вернёт нам уже нужный байт, понятный для драйвера
 				// дисплея. И сразу же отправляем его дисплею
 				TM_HD44780_Data(ConvertRus(in2byte));
+				numOfsymbol++;
 			}
 			else
 			{
 				// Если это не кириллица, то просто отправляем байт дисплею.
 				TM_HD44780_Data(*str);
+				numOfsymbol++;
 				// Двигаем счётчик на единицу
 				str++;
 				len--;
@@ -259,9 +290,9 @@ void TM_HD44780_Puts(uint8_t x, uint8_t y, uint8_t *str, uint8_t len)
 			//		}
 			//		str++;
 			//		}
-		}/**/
+			/**/
+		}
 	}
-
 }
 
 void TM_HD44780_DisplayOn(void) {

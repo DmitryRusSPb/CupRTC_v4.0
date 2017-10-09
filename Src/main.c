@@ -1026,7 +1026,7 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 	MAX729_Init(0x05);
-	TM_HD44780_Init(16, 2);
+	TM_HD44780_Init(LENGTH_OF_LINE_LCD, NUMBER_OF_LINES_LCD);
 	SpeexInit();
   /* USER CODE END 2 */
 
@@ -2267,8 +2267,8 @@ void StartLCDTask(void const * argument)
 		}
 		else
 		{
-			TM_HD44780_Puts(6, 0, textMessage1, (uint8_t*)&sizeText1);
-			TM_HD44780_Puts(5, 1, textMessage2, (uint8_t*)&sizeText2);
+			TM_HD44780_Puts(0, 0, textMessage1, (uint8_t*)&sizeText1);
+			TM_HD44780_Puts(0, 1, textMessage2, (uint8_t*)&sizeText2);
 		}
 		// Отправляем задачу спать
 		vTaskSuspend(NULL);
