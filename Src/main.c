@@ -67,9 +67,7 @@ DAC_HandleTypeDef hdac;
 SPI_HandleTypeDef hspi1;
 
 TIM_HandleTypeDef htim3;
-TIM_HandleTypeDef htim5;
 TIM_HandleTypeDef htim8;
-DMA_HandleTypeDef hdma_tim5_ch2;
 DMA_HandleTypeDef hdma_tim8_ch2;
 
 UART_HandleTypeDef huart1;
@@ -935,7 +933,6 @@ static void MX_SPI1_Init(void);
 static void MX_DAC_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM3_Init(void);
-static void MX_TIM5_Init(void);
 static void MX_TIM8_Init(void);
 void StartAdminLaunchTask(void const * argument);
 void StartButtonTask(void const * argument);
@@ -946,7 +943,6 @@ void StartAudioMessageTask(void const * argument);
 void StartRGBws2812bTask(void const * argument);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-                                
                                 
 
 /* USER CODE BEGIN PFP */
@@ -1021,7 +1017,6 @@ int main(void)
   MX_DAC_Init();
   MX_USART1_UART_Init();
   MX_TIM3_Init();
-  MX_TIM5_Init();
   MX_TIM8_Init();
 
   /* USER CODE BEGIN 2 */
@@ -1224,44 +1219,6 @@ static void MX_TIM3_Init(void)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
-
-}
-
-/* TIM5 init function */
-static void MX_TIM5_Init(void)
-{
-
-  TIM_MasterConfigTypeDef sMasterConfig;
-  TIM_OC_InitTypeDef sConfigOC;
-
-  htim5.Instance = TIM5;
-  htim5.Init.Prescaler = 1;
-  htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim5.Init.Period = 24;
-  htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_PWM_Init(&htim5) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
-
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim5, &sMasterConfig) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
-
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
-
-  HAL_TIM_MspPostInit(&htim5);
 
 }
 
@@ -1990,11 +1947,11 @@ void WS2812_send(uint8_t (*color)[3], uint16_t len)
 		memaddr++;
 	}
 	// Запускаем таймер
-	HAL_TIM_Base_Start(&htim5);
+	HAL_TIM_Base_Start(&htim8);
 	// Запускаем передачу и включаем шим
-	HAL_TIM_PWM_Start_DMA(&htim5, TIM_CHANNEL_3, (uint32_t*)LED_BYTE_Buffer, buffersize);
+	HAL_TIM_PWM_Start_DMA(&htim8, TIM_CHANNEL_2, (uint32_t*)LED_BYTE_Buffer, buffersize);
 	// Выключаем таймер
-	HAL_TIM_Base_Stop(&htim5);
+	HAL_TIM_Base_Stop(&htim8);
 }
 
 GPIO_PinState AntiContactBounce(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
@@ -2361,6 +2318,15 @@ void StartRGBws2812bTask(void const * argument)
 	/* Infinite loop */
 	for(;;)
 	{
+		/* first cycle through the colors on 2 LEDs chained together
+		 * last LED in the chain will receive first sent triplet
+		 * --> last LED in the chain will 'lead'
+		 */
+		for (uint16_t i = 0; i < 766; i += 4)
+		{
+			WS2812_send(&eightbit[i], 4);
+			HAL_Delay(500);
+		}
 		osDelay(1);
 	}
   /* USER CODE END StartRGBws2812bTask */

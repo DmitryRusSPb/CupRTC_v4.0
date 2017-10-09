@@ -45,7 +45,6 @@ extern DAC_HandleTypeDef hdac;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern DMA_HandleTypeDef hdma_tim5_ch2;
 extern DMA_HandleTypeDef hdma_tim8_ch2;
 extern TIM_HandleTypeDef htim3;
 
@@ -226,7 +225,6 @@ void DMA2_Channel4_5_IRQHandler(void)
   /* USER CODE BEGIN DMA2_Channel4_5_IRQn 0 */
 
   /* USER CODE END DMA2_Channel4_5_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_tim5_ch2);
   HAL_DMA_IRQHandler(&hdma_tim8_ch2);
   /* USER CODE BEGIN DMA2_Channel4_5_IRQn 1 */
 

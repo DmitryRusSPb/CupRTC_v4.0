@@ -49,8 +49,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
 
-extern DMA_HandleTypeDef hdma_tim5_ch2;
-
 extern DMA_HandleTypeDef hdma_tim8_ch2;
 
 extern void _Error_Handler(char *, int);
@@ -219,36 +217,7 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
 void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim_pwm)
 {
 
-  if(htim_pwm->Instance==TIM5)
-  {
-  /* USER CODE BEGIN TIM5_MspInit 0 */
-
-  /* USER CODE END TIM5_MspInit 0 */
-    /* Peripheral clock enable */
-    __HAL_RCC_TIM5_CLK_ENABLE();
-  
-    /* TIM5 DMA Init */
-    /* TIM5_CH2 Init */
-    hdma_tim5_ch2.Instance = DMA2_Channel4;
-    hdma_tim5_ch2.Init.Direction = DMA_MEMORY_TO_PERIPH;
-    hdma_tim5_ch2.Init.PeriphInc = DMA_PINC_DISABLE;
-    hdma_tim5_ch2.Init.MemInc = DMA_MINC_ENABLE;
-    hdma_tim5_ch2.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
-    hdma_tim5_ch2.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
-    hdma_tim5_ch2.Init.Mode = DMA_NORMAL;
-    hdma_tim5_ch2.Init.Priority = DMA_PRIORITY_VERY_HIGH;
-    if (HAL_DMA_Init(&hdma_tim5_ch2) != HAL_OK)
-    {
-      _Error_Handler(__FILE__, __LINE__);
-    }
-
-    __HAL_LINKDMA(htim_pwm,hdma[TIM_DMA_ID_CC2],hdma_tim5_ch2);
-
-  /* USER CODE BEGIN TIM5_MspInit 1 */
-
-  /* USER CODE END TIM5_MspInit 1 */
-  }
-  else if(htim_pwm->Instance==TIM8)
+  if(htim_pwm->Instance==TIM8)
   {
   /* USER CODE BEGIN TIM8_MspInit 0 */
 
@@ -259,13 +228,13 @@ void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim_pwm)
     /* TIM8 DMA Init */
     /* TIM8_CH2 Init */
     hdma_tim8_ch2.Instance = DMA2_Channel5;
-    hdma_tim8_ch2.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_tim8_ch2.Init.Direction = DMA_MEMORY_TO_PERIPH;
     hdma_tim8_ch2.Init.PeriphInc = DMA_PINC_DISABLE;
     hdma_tim8_ch2.Init.MemInc = DMA_MINC_ENABLE;
     hdma_tim8_ch2.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
     hdma_tim8_ch2.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
     hdma_tim8_ch2.Init.Mode = DMA_NORMAL;
-    hdma_tim8_ch2.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_tim8_ch2.Init.Priority = DMA_PRIORITY_VERY_HIGH;
     if (HAL_DMA_Init(&hdma_tim8_ch2) != HAL_OK)
     {
       _Error_Handler(__FILE__, __LINE__);
@@ -284,24 +253,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
 {
 
   GPIO_InitTypeDef GPIO_InitStruct;
-  if(htim->Instance==TIM5)
-  {
-  /* USER CODE BEGIN TIM5_MspPostInit 0 */
-
-  /* USER CODE END TIM5_MspPostInit 0 */
-    /**TIM5 GPIO Configuration    
-    PA1     ------> TIM5_CH2 
-    */
-    GPIO_InitStruct.Pin = GPIO_PIN_1;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /* USER CODE BEGIN TIM5_MspPostInit 1 */
-
-  /* USER CODE END TIM5_MspPostInit 1 */
-  }
-  else if(htim->Instance==TIM8)
+  if(htim->Instance==TIM8)
   {
   /* USER CODE BEGIN TIM8_MspPostInit 0 */
 
@@ -345,21 +297,7 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
 void HAL_TIM_PWM_MspDeInit(TIM_HandleTypeDef* htim_pwm)
 {
 
-  if(htim_pwm->Instance==TIM5)
-  {
-  /* USER CODE BEGIN TIM5_MspDeInit 0 */
-
-  /* USER CODE END TIM5_MspDeInit 0 */
-    /* Peripheral clock disable */
-    __HAL_RCC_TIM5_CLK_DISABLE();
-
-    /* TIM5 DMA DeInit */
-    HAL_DMA_DeInit(htim_pwm->hdma[TIM_DMA_ID_CC2]);
-  /* USER CODE BEGIN TIM5_MspDeInit 1 */
-
-  /* USER CODE END TIM5_MspDeInit 1 */
-  }
-  else if(htim_pwm->Instance==TIM8)
+  if(htim_pwm->Instance==TIM8)
   {
   /* USER CODE BEGIN TIM8_MspDeInit 0 */
 
