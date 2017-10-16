@@ -65,7 +65,7 @@
 /*.................................FLASH......................................*/
 // Адрес начальной страницы в памяти, а также
 // адрес места в памяти для хранения занятого на соревнованиях места
-#define START_FLASH_PAGE       0x0F1D73FD0
+#define START_FLASH_PAGE       0x8012130
 
 // Адрес места в памяти для хранения размера Text1
 #define SIZE_TEXT1_address     (START_FLASH_PAGE + 0x00000004)
@@ -74,16 +74,16 @@
 #define TEXT1_address          (START_FLASH_PAGE + 0x00000008)
 
 // Адрес места в памяти для хранения размера Text2
-#define SIZE_TEXT2_address     (START_FLASH_PAGE + 0x00000008 + sizeText1)
+#define SIZE_TEXT2_address     (START_FLASH_PAGE + 0x00000008 + formalSizeText1)
 
 // Адрес места в памяти для хранения Text2
-#define TEXT2_address          (START_FLASH_PAGE + 0x0000000C + sizeText1)
+#define TEXT2_address          (START_FLASH_PAGE + 0x0000000C + formalSizeText1)
 
 // Адрес места в памяти для хранения количества фреймов(для аудиофайла)
-#define BLOCK_address          (START_FLASH_PAGE + 0x0000000C + sizeText1 + sizeText2)
+#define BLOCK_address          (START_FLASH_PAGE + 0x0000000C + formalSizeText1 + formalSizeText2)
 
 // Адрес места в памяти для хранения аудиофайла
-#define SPEEX_address          (START_FLASH_PAGE + 0x00000010 + sizeText1 + sizeText2)
+#define SPEEX_address          (START_FLASH_PAGE + 0x00000010 + formalSizeText1 + formalSizeText2)
 
 // Если мы получил текст, место или кол-во фреймов(speex), то занимаем 16 байт
 #define TEXTSIZE               16
@@ -109,13 +109,16 @@
 #define BUTTON_GPIO_PORT        GPIOB
 #define BUTTON_GPIO_PIN         GPIO_PIN_6
 
-#define LENGTH_OF_LINE_LCD    16
-#define NUMBER_OF_LINES_LCD   2
+#define LENGTH_OF_LINE_LCD    	16
+#define NUMBER_OF_LINES_LCD   	2
 
 #define DEMO_TEXT_1             "Демо текст 1"
 #define DEMO_TEXT_2             "Demo text 2"
 #define LEN_DEMO_TEXT_1         strlen(DEMO_TEXT_1)
 #define LEN_DEMO_TEXT_2         strlen(DEMO_TEXT_2)
+
+#define QUANTITY_OF_LED  		4
+#define TRAILING_BYTES			42
 
 typedef enum
 {

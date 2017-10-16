@@ -1,50 +1,50 @@
 /**
- ******************************************************************************
- * File Name          : main.c
- * Description        : Main program body
- ******************************************************************************
- * This notice applies to any and all portions of this file
- * that are not between comment pairs USER CODE BEGIN and
- * USER CODE END. Other portions of this file, whether
- * inserted by the user or by software development tools
- * are owned by their respective copyright owners.
- *
- * Copyright (c) 2017 STMicroelectronics International N.V.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted, provided that the following conditions are met:
- *
- * 1. Redistribution of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- * 3. Neither the name of STMicroelectronics nor the names of other
- *    contributors to this software may be used to endorse or promote products
- *    derived from this software without specific written permission.
- * 4. This software, including modifications and/or derivative works of this
- *    software, must execute solely and exclusively on microcontroller or
- *    microprocessor devices manufactured by or for STMicroelectronics.
- * 5. Redistribution and use of this software other than as permitted under
- *    this license is void and will automatically terminate your rights under
- *    this license.
- *
- * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
- * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT
- * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
- * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- ******************************************************************************
- */
+  ******************************************************************************
+  * File Name          : main.c
+  * Description        : Main program body
+  ******************************************************************************
+  * This notice applies to any and all portions of this file
+  * that are not between comment pairs USER CODE BEGIN and
+  * USER CODE END. Other portions of this file, whether 
+  * inserted by the user or by software development tools
+  * are owned by their respective copyright owners.
+  *
+  * Copyright (c) 2017 STMicroelectronics International N.V. 
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without 
+  * modification, are permitted, provided that the following conditions are met:
+  *
+  * 1. Redistribution of source code must retain the above copyright notice, 
+  *    this list of conditions and the following disclaimer.
+  * 2. Redistributions in binary form must reproduce the above copyright notice,
+  *    this list of conditions and the following disclaimer in the documentation
+  *    and/or other materials provided with the distribution.
+  * 3. Neither the name of STMicroelectronics nor the names of other 
+  *    contributors to this software may be used to endorse or promote products 
+  *    derived from this software without specific written permission.
+  * 4. This software, including modifications and/or derivative works of this 
+  *    software, must execute solely and exclusively on microcontroller or
+  *    microprocessor devices manufactured by or for STMicroelectronics.
+  * 5. Redistribution and use of this software other than as permitted under 
+  *    this license is void and will automatically terminate your rights under 
+  *    this license. 
+  *
+  * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS" 
+  * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT 
+  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+  * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
+  * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT 
+  * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
+  * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  *
+  ******************************************************************************
+  */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f1xx_hal.h"
@@ -152,8 +152,11 @@ uint8_t creatCharMas[][8] = {
 //// Состояние режима "обновление"
 //uint8_t updateStatus = 0;
 //uint8_t buttonStatus = 0;
-uint16_t LED_BYTE_Buffer[136];
-uint8_t buf[40+1*24];
+uint16_t LED_BYTE_Buffer[QUANTITY_OF_LED*24 + TRAILING_BYTES];
+
+
+uint32_t formalSizeText1;
+uint32_t formalSizeText2;
 
 /* USER CODE END PV */
 
@@ -175,7 +178,7 @@ void StartAudioMessageTask(void const * argument);
 void StartRGBws2812bTask(void const * argument);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-
+                                
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -222,36 +225,36 @@ EXIT DrawAll(uint8_t state);
 int main(void)
 {
 
-	/* USER CODE BEGIN 1 */
+  /* USER CODE BEGIN 1 */
 
-	/* USER CODE END 1 */
+  /* USER CODE END 1 */
 
-	/* MCU Configuration----------------------------------------------------------*/
+  /* MCU Configuration----------------------------------------------------------*/
 
-	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	HAL_Init();
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
-	/* USER CODE BEGIN Init */
+  /* USER CODE BEGIN Init */
 
-	/* USER CODE END Init */
+  /* USER CODE END Init */
 
-	/* Configure the system clock */
-	SystemClock_Config();
+  /* Configure the system clock */
+  SystemClock_Config();
 
-	/* USER CODE BEGIN SysInit */
+  /* USER CODE BEGIN SysInit */
 
-	/* USER CODE END SysInit */
+  /* USER CODE END SysInit */
 
-	/* Initialize all configured peripherals */
-	MX_GPIO_Init();
-	MX_DMA_Init();
-	MX_SPI1_Init();
-	MX_DAC_Init();
-	MX_USART1_UART_Init();
-	MX_TIM3_Init();
-	MX_TIM8_Init();
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_SPI1_Init();
+  MX_DAC_Init();
+  MX_USART1_UART_Init();
+  MX_TIM3_Init();
+  MX_TIM8_Init();
 
-	/* USER CODE BEGIN 2 */
+  /* USER CODE BEGIN 2 */
 	// Инициализация led матрицы.
 	// На вход подается интенсивность
 	MAX729_Init(0x05);
@@ -259,145 +262,145 @@ int main(void)
 	TM_HD44780_Init(LENGTH_OF_LINE_LCD, NUMBER_OF_LINES_LCD);
 
 	SpeexInit();
-	/* USER CODE END 2 */
+  /* USER CODE END 2 */
 
-	/* USER CODE BEGIN RTOS_MUTEX */
+  /* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
-	/* USER CODE END RTOS_MUTEX */
+  /* USER CODE END RTOS_MUTEX */
 
-	/* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
-	/* USER CODE END RTOS_SEMAPHORES */
+  /* USER CODE END RTOS_SEMAPHORES */
 
-	/* USER CODE BEGIN RTOS_TIMERS */
+  /* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-	/* USER CODE END RTOS_TIMERS */
+  /* USER CODE END RTOS_TIMERS */
 
-	/* Create the thread(s) */
-	/* definition and creation of AdminLaunch */
-	osThreadDef(AdminLaunch, StartAdminLaunchTask, osPriorityIdle, 0, 256);
-	AdminLaunchHandle = osThreadCreate(osThread(AdminLaunch), NULL);
+  /* Create the thread(s) */
+  /* definition and creation of AdminLaunch */
+  osThreadDef(AdminLaunch, StartAdminLaunchTask, osPriorityIdle, 0, 256);
+  AdminLaunchHandle = osThreadCreate(osThread(AdminLaunch), NULL);
 
-	/* definition and creation of Button */
-	osThreadDef(Button, StartButtonTask, osPriorityIdle, 0, 256);
-	ButtonHandle = osThreadCreate(osThread(Button), NULL);
+  /* definition and creation of Button */
+  osThreadDef(Button, StartButtonTask, osPriorityIdle, 0, 256);
+  ButtonHandle = osThreadCreate(osThread(Button), NULL);
 
-	/* definition and creation of USART */
-	osThreadDef(USART, StartUSARTTask, osPriorityIdle, 0, 256);
-	USARTHandle = osThreadCreate(osThread(USART), NULL);
+  /* definition and creation of USART */
+  osThreadDef(USART, StartUSARTTask, osPriorityIdle, 0, 256);
+  USARTHandle = osThreadCreate(osThread(USART), NULL);
 
-	/* definition and creation of LCD */
-	osThreadDef(LCD, StartLCDTask, osPriorityIdle, 0, 256);
-	LCDHandle = osThreadCreate(osThread(LCD), NULL);
+  /* definition and creation of LCD */
+  osThreadDef(LCD, StartLCDTask, osPriorityIdle, 0, 256);
+  LCDHandle = osThreadCreate(osThread(LCD), NULL);
 
-	/* definition and creation of LEDmatrix */
-	osThreadDef(LEDmatrix, StartLEDmatrixTask, osPriorityIdle, 0, 256);
-	LEDmatrixHandle = osThreadCreate(osThread(LEDmatrix), NULL);
+  /* definition and creation of LEDmatrix */
+  osThreadDef(LEDmatrix, StartLEDmatrixTask, osPriorityIdle, 0, 256);
+  LEDmatrixHandle = osThreadCreate(osThread(LEDmatrix), NULL);
 
-	/* definition and creation of AudioMessage */
-	osThreadDef(AudioMessage, StartAudioMessageTask, osPriorityIdle, 0, 256);
-	AudioMessageHandle = osThreadCreate(osThread(AudioMessage), NULL);
+  /* definition and creation of AudioMessage */
+  osThreadDef(AudioMessage, StartAudioMessageTask, osPriorityIdle, 0, 256);
+  AudioMessageHandle = osThreadCreate(osThread(AudioMessage), NULL);
 
-	/* definition and creation of RGBws2812b */
-	osThreadDef(RGBws2812b, StartRGBws2812bTask, osPriorityIdle, 0, 256);
-	RGBws2812bHandle = osThreadCreate(osThread(RGBws2812b), NULL);
+  /* definition and creation of RGBws2812b */
+  osThreadDef(RGBws2812b, StartRGBws2812bTask, osPriorityIdle, 0, 256);
+  RGBws2812bHandle = osThreadCreate(osThread(RGBws2812b), NULL);
 
-	/* USER CODE BEGIN RTOS_THREADS */
+  /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
-	/* USER CODE END RTOS_THREADS */
+  /* USER CODE END RTOS_THREADS */
 
-	/* USER CODE BEGIN RTOS_QUEUES */
+  /* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
-	/* USER CODE END RTOS_QUEUES */
+  /* USER CODE END RTOS_QUEUES */
+ 
 
+  /* Start scheduler */
+  osKernelStart();
+  
+  /* We should never get here as control is now taken by the scheduler */
 
-	/* Start scheduler */
-	osKernelStart();
-
-	/* We should never get here as control is now taken by the scheduler */
-
-	/* Infinite loop */
-	/* USER CODE BEGIN WHILE */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
 	while (1)
 	{
-		/* USER CODE END WHILE */
+  /* USER CODE END WHILE */
 
-		/* USER CODE BEGIN 3 */
+  /* USER CODE BEGIN 3 */
 
 	}
-	/* USER CODE END 3 */
+  /* USER CODE END 3 */
 
 }
 
 /** System Clock Configuration
- */
+*/
 void SystemClock_Config(void)
 {
 
-	RCC_OscInitTypeDef RCC_OscInitStruct;
-	RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_OscInitTypeDef RCC_OscInitStruct;
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
-	/**Initializes the CPU, AHB and APB busses clocks
-	 */
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-	RCC_OscInitStruct.HSICalibrationValue = 16;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
-	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL10;
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-	{
-		_Error_Handler(__FILE__, __LINE__);
-	}
+    /**Initializes the CPU, AHB and APB busses clocks 
+    */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = 16;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL16;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 
-	/**Initializes the CPU, AHB and APB busses clocks
-	 */
-	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-			|RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+    /**Initializes the CPU, AHB and APB busses clocks 
+    */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
-	{
-		_Error_Handler(__FILE__, __LINE__);
-	}
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 
-	/**Configure the Systick interrupt time
-	 */
-	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+    /**Configure the Systick interrupt time 
+    */
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
-	/**Configure the Systick
-	 */
-	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+    /**Configure the Systick 
+    */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
-	/* SysTick_IRQn interrupt configuration */
-	HAL_NVIC_SetPriority(SysTick_IRQn, 15, 0);
+  /* SysTick_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(SysTick_IRQn, 15, 0);
 }
 
 /* DAC init function */
 static void MX_DAC_Init(void)
 {
 
-	DAC_ChannelConfTypeDef sConfig;
+  DAC_ChannelConfTypeDef sConfig;
 
-	/**DAC Initialization
-	 */
-	hdac.Instance = DAC;
-	if (HAL_DAC_Init(&hdac) != HAL_OK)
-	{
-		_Error_Handler(__FILE__, __LINE__);
-	}
+    /**DAC Initialization 
+    */
+  hdac.Instance = DAC;
+  if (HAL_DAC_Init(&hdac) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 
-	/**DAC channel OUT1 config
-	 */
-	sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
-	sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
-	if (HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1) != HAL_OK)
-	{
-		_Error_Handler(__FILE__, __LINE__);
-	}
+    /**DAC channel OUT1 config 
+    */
+  sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
+  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+  if (HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 
 }
 
@@ -405,23 +408,23 @@ static void MX_DAC_Init(void)
 static void MX_SPI1_Init(void)
 {
 
-	/* SPI1 parameter configuration*/
-	hspi1.Instance = SPI1;
-	hspi1.Init.Mode = SPI_MODE_MASTER;
-	hspi1.Init.Direction = SPI_DIRECTION_1LINE;
-	hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
-	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-	hspi1.Init.NSS = SPI_NSS_SOFT;
-	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
-	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-	hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-	hspi1.Init.CRCPolynomial = 10;
-	if (HAL_SPI_Init(&hspi1) != HAL_OK)
-	{
-		_Error_Handler(__FILE__, __LINE__);
-	}
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_1LINE;
+  hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 
 }
 
@@ -429,32 +432,32 @@ static void MX_SPI1_Init(void)
 static void MX_TIM3_Init(void)
 {
 
-	TIM_ClockConfigTypeDef sClockSourceConfig;
-	TIM_MasterConfigTypeDef sMasterConfig;
+  TIM_ClockConfigTypeDef sClockSourceConfig;
+  TIM_MasterConfigTypeDef sMasterConfig;
 
-	htim3.Instance = TIM3;
-	htim3.Init.Prescaler = 0;
-	htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim3.Init.Period = 4999;
-	htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-	if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
-	{
-		_Error_Handler(__FILE__, __LINE__);
-	}
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 0;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 7999;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 
-	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-	if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
-	{
-		_Error_Handler(__FILE__, __LINE__);
-	}
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 
-	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-	if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-	{
-		_Error_Handler(__FILE__, __LINE__);
-	}
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 
 }
 
@@ -462,54 +465,54 @@ static void MX_TIM3_Init(void)
 static void MX_TIM8_Init(void)
 {
 
-	TIM_MasterConfigTypeDef sMasterConfig;
-	TIM_OC_InitTypeDef sConfigOC;
-	TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig;
+  TIM_MasterConfigTypeDef sMasterConfig;
+  TIM_OC_InitTypeDef sConfigOC;
+  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig;
 
-	htim8.Instance = TIM8;
-	htim8.Init.Prescaler = 1;
-	htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim8.Init.Period = 24;
-	htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	htim8.Init.RepetitionCounter = 0;
-	htim8.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-	if (HAL_TIM_PWM_Init(&htim8) != HAL_OK)
-	{
-		_Error_Handler(__FILE__, __LINE__);
-	}
+  htim8.Instance = TIM8;
+  htim8.Init.Prescaler = 1;
+  htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim8.Init.Period = 79;
+  htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim8.Init.RepetitionCounter = 0;
+  htim8.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim8) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 
-	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-	if (HAL_TIMEx_MasterConfigSynchronization(&htim8, &sMasterConfig) != HAL_OK)
-	{
-		_Error_Handler(__FILE__, __LINE__);
-	}
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim8, &sMasterConfig) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 
-	sConfigOC.OCMode = TIM_OCMODE_PWM1;
-	sConfigOC.Pulse = 0;
-	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-	sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-	sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
-	sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-	sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-	if (HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
-	{
-		_Error_Handler(__FILE__, __LINE__);
-	}
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
+  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+  if (HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 
-	sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
-	sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
-	sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
-	sBreakDeadTimeConfig.DeadTime = 0;
-	sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
-	sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
-	sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-	if (HAL_TIMEx_ConfigBreakDeadTime(&htim8, &sBreakDeadTimeConfig) != HAL_OK)
-	{
-		_Error_Handler(__FILE__, __LINE__);
-	}
+  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+  sBreakDeadTimeConfig.DeadTime = 0;
+  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+  if (HAL_TIMEx_ConfigBreakDeadTime(&htim8, &sBreakDeadTimeConfig) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 
-	HAL_TIM_MspPostInit(&htim8);
+  HAL_TIM_MspPostInit(&htim8);
 
 }
 
@@ -517,85 +520,85 @@ static void MX_TIM8_Init(void)
 static void MX_USART1_UART_Init(void)
 {
 
-	huart1.Instance = USART1;
-	huart1.Init.BaudRate = 115200;
-	huart1.Init.WordLength = UART_WORDLENGTH_8B;
-	huart1.Init.StopBits = UART_STOPBITS_1;
-	huart1.Init.Parity = UART_PARITY_NONE;
-	huart1.Init.Mode = UART_MODE_TX_RX;
-	huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-	if (HAL_UART_Init(&huart1) != HAL_OK)
-	{
-		_Error_Handler(__FILE__, __LINE__);
-	}
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 
 }
 
 /** 
- * Enable DMA controller clock
- */
+  * Enable DMA controller clock
+  */
 static void MX_DMA_Init(void) 
 {
-	/* DMA controller clock enable */
-	__HAL_RCC_DMA2_CLK_ENABLE();
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
 
-	/* DMA interrupt init */
-	/* DMA2_Channel4_5_IRQn interrupt configuration */
-	HAL_NVIC_SetPriority(DMA2_Channel4_5_IRQn, 5, 0);
-	HAL_NVIC_EnableIRQ(DMA2_Channel4_5_IRQn);
+  /* DMA interrupt init */
+  /* DMA2_Channel4_5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Channel4_5_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Channel4_5_IRQn);
 
 }
 
 /** Configure pins as 
- * Analog
- * Input
- * Output
- * EVENT_OUT
- * EXTI
- */
+        * Analog 
+        * Input 
+        * Output
+        * EVENT_OUT
+        * EXTI
+*/
 static void MX_GPIO_Init(void)
 {
 
-	GPIO_InitTypeDef GPIO_InitStruct;
+  GPIO_InitTypeDef GPIO_InitStruct;
 
-	/* GPIO Ports Clock Enable */
-	__HAL_RCC_GPIOC_CLK_ENABLE();
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-	__HAL_RCC_GPIOB_CLK_ENABLE();
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
-	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13|GPIO_PIN_12, GPIO_PIN_RESET);
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13|GPIO_PIN_12, GPIO_PIN_RESET);
 
-	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
 
-	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_7, GPIO_PIN_RESET);
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_7, GPIO_PIN_RESET);
 
-	/*Configure GPIO pins : PC13 PC12 */
-	GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_12;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  /*Configure GPIO pins : PC13 PC12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-	/*Configure GPIO pin : PA6 */
-	GPIO_InitStruct.Pin = GPIO_PIN_6;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  /*Configure GPIO pin : PA6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : PB2 PB12 PB13 PB7 */
-	GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_7;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  /*Configure GPIO pins : PB2 PB12 PB13 PB7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-	/*Configure GPIO pin : PB6 */
-	GPIO_InitStruct.Pin = GPIO_PIN_6;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  /*Configure GPIO pin : PB6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 
@@ -991,6 +994,8 @@ AnswerStatus SU_FLASH_Save_User_Data(speex_data parsData, uint8_t numReceivedByt
 	// Создаём указатель на записываемые данные
 	uint32_t *addressSrc;
 
+	uint8_t multipleMessageSize = 0;
+
 	switch (parsData.command)
 	{
 	// Занятое место
@@ -1012,12 +1017,13 @@ AnswerStatus SU_FLASH_Save_User_Data(speex_data parsData, uint8_t numReceivedByt
 		// Вычитаем 15 из общего числа полученных байт, так как это не сами данные
 		// ,а лишь информация о роде данных.
 		messageSize = numReceivedByts - 15;
+		multipleMessageSize = messageSize;
 		// Если размер сообщения не кратен 4, то прибавляем до кратности
 		// и обнуляем элемент массива под номером messageSize,
 		// так как в нём лежат старые данные
-		if(messageSize % 4)
+		if((messageSize % 4) != 0)
 		{
-			while(messageSize % 4)
+			while((messageSize % 4) != 0)
 			{
 				parsData.data[messageSize] = 0;
 				messageSize++;
@@ -1078,7 +1084,7 @@ AnswerStatus SU_FLASH_Save_User_Data(speex_data parsData, uint8_t numReceivedByt
 	if(parsData.command == 2 || parsData.command == 3)
 	{
 		// Записываем в память количество байт в тексте
-		if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD , addressDes, messageSize) != HAL_OK)
+		if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD , addressDes, multipleMessageSize) != HAL_OK)
 		{
 			// Закрываем флеш в случае неудачной записи
 			HAL_FLASH_Lock();
@@ -1126,7 +1132,7 @@ void WS2812_send(uint8_t (*color)[3], uint16_t len)
 	uint16_t memaddr;
 	uint16_t buffersize;
 
-	buffersize = (len*24) + 42;	// number of bytes needed is #LEDs * 24 bytes + 42 trailing bytes
+	buffersize = (len*24) + TRAILING_BYTES;	// number of bytes needed is #LEDs * 24 bytes + 42 trailing bytes
 	memaddr = 0;				// reset buffer memory index
 	led = 0;					// reset led index
 	// fill transmit buffer with correct compare values to achieve
@@ -1137,11 +1143,11 @@ void WS2812_send(uint8_t (*color)[3], uint16_t len)
 		{
 			if ( (color[led][1]<<j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
-				LED_BYTE_Buffer[memaddr] = 17; 	// compare value for logical 1
+				LED_BYTE_Buffer[memaddr] = 21; 	// compare value for logical 1
 			}
 			else
 			{
-				LED_BYTE_Buffer[memaddr] = 9;	// compare value for logical 0
+				LED_BYTE_Buffer[memaddr] = 7;	// compare value for logical 0
 			}
 			memaddr++;
 		}
@@ -1150,11 +1156,11 @@ void WS2812_send(uint8_t (*color)[3], uint16_t len)
 		{
 			if ( (color[led][0]<<j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
-				LED_BYTE_Buffer[memaddr] = 17; 	// compare value for logical 1
+				LED_BYTE_Buffer[memaddr] = 21; 	// compare value for logical 1
 			}
 			else
 			{
-				LED_BYTE_Buffer[memaddr] = 9;	// compare value for logical 0
+				LED_BYTE_Buffer[memaddr] = 7;	// compare value for logical 0
 			}
 			memaddr++;
 		}
@@ -1163,11 +1169,11 @@ void WS2812_send(uint8_t (*color)[3], uint16_t len)
 		{
 			if ( (color[led][2]<<j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
-				LED_BYTE_Buffer[memaddr] = 17; 	// compare value for logical 1
+				LED_BYTE_Buffer[memaddr] = 21; 	// compare value for logical 1
 			}
 			else
 			{
-				LED_BYTE_Buffer[memaddr] = 9;	// compare value for logical 0
+				LED_BYTE_Buffer[memaddr] = 7;	// compare value for logical 0
 			}
 			memaddr++;
 		}
@@ -1197,8 +1203,8 @@ GPIO_PinState AntiContactBounce(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 	while(HAL_GPIO_ReadPin(GPIOx, GPIO_Pin))
 	{
 		numOfPolls++;
+		if(numOfPolls >= NUMBER_OF_POLLS) return GPIO_PIN_SET;
 	}
-	if(numOfPolls >= NUMBER_OF_POLLS) return GPIO_PIN_SET;
 	return GPIO_PIN_RESET;
 }
 /* USER CODE END 4 */
@@ -1207,14 +1213,18 @@ GPIO_PinState AntiContactBounce(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 void StartAdminLaunchTask(void const * argument)
 {
 
-	/* USER CODE BEGIN 5 */
+  /* USER CODE BEGIN 5 */
 	/* Infinite loop */
+	uint32_t multipleMessageSize;
 	// Отправляем все остальные задачи спать, так как пока что-то делать не требуется
 	vTaskSuspend(AudioMessageHandle);
 	vTaskSuspend(LCDHandle);
 	vTaskSuspend(LEDmatrixHandle);
 	vTaskSuspend(USARTHandle);
 	//vTaskSuspend(WS2812_RGBHandle);
+
+	formalSizeText1 = 0;
+	formalSizeText2 = 0;
 
 	for(;;)
 	{
@@ -1239,19 +1249,22 @@ void StartAdminLaunchTask(void const * argument)
 				//Читаем из flash памяти информацию о...
 				//размере первого текстового сообщения
 				memcpy(&sizeText1, (void *)SIZE_TEXT1_address, 4);
+
 				//содержании первого текстового сообщения
 				memcpy(textMessage1, (void *)TEXT1_address, sizeText1);
-				while(sizeText1 % 4 !=0)
+				formalSizeText1 = sizeText1;
+				while(formalSizeText1 % 4 !=0)
 				{
-					sizeText1++;
+					formalSizeText1++;
 				}
 				//размере второго текстового сообщения
 				memcpy(&sizeText2, (void *)SIZE_TEXT2_address, 4);
 				//содержании второго текстового сообщения
 				memcpy(textMessage2, (void *)TEXT2_address, sizeText2);
-				while(sizeText2 % 4 !=0)
+				formalSizeText2 = sizeText2;
+				while(formalSizeText2 % 4 !=0)
 				{
-					sizeText2++;
+					formalSizeText2++;
 				}
 				//размере аудиофайла (в фреймах по 20 байт)
 				memcpy(&sizeSpeex, (void *)BLOCK_address, 4);
@@ -1262,13 +1275,13 @@ void StartAdminLaunchTask(void const * argument)
 		// Отправляем задачу спать
 		vTaskSuspend(NULL);
 	}
-	/* USER CODE END 5 */
+  /* USER CODE END 5 */ 
 }
 
 /* StartButtonTask function */
 void StartButtonTask(void const * argument)
 {
-	/* USER CODE BEGIN StartButtonTask */
+  /* USER CODE BEGIN StartButtonTask */
 	/* Infinite loop */
 	uint8_t pressTime; // Создаем счётчик для фиксации времени нажатия кнопки
 
@@ -1305,6 +1318,7 @@ void StartButtonTask(void const * argument)
 				vTaskSuspend(AudioMessageHandle);
 				vTaskSuspend(LEDmatrixHandle);
 				vTaskSuspend(LCDHandle);
+				vTaskSuspend(RGBws2812bHandle);
 
 				// Запускаем задачу USART
 				vTaskResume(USARTHandle);
@@ -1315,13 +1329,13 @@ void StartButtonTask(void const * argument)
 		}
 		osDelay(1);
 	}
-	/* USER CODE END StartButtonTask */
+  /* USER CODE END StartButtonTask */
 }
 
 /* StartUSARTTask function */
 void StartUSARTTask(void const * argument)
 {
-	/* USER CODE BEGIN StartUSARTTask */
+  /* USER CODE BEGIN StartUSARTTask */
 	/* Infinite loop */
 	// Счетчик, показывающий сколько мы уже приняли байт в "data_buffer"
 	uint8_t numBuff;
@@ -1439,13 +1453,13 @@ void StartUSARTTask(void const * argument)
 		}
 		osDelay(1);
 	}
-	/* USER CODE END StartUSARTTask */
+  /* USER CODE END StartUSARTTask */
 }
 
 /* StartLCDTask function */
 void StartLCDTask(void const * argument)
 {
-	/* USER CODE BEGIN StartLCDTask */
+  /* USER CODE BEGIN StartLCDTask */
 	/* Infinite loop */
 	for(;;)
 	{
@@ -1460,19 +1474,19 @@ void StartLCDTask(void const * argument)
 		}
 		else
 		{
-			TM_HD44780_Puts(0, 0, textMessage1, (uint8_t*)&sizeText1);
-			TM_HD44780_Puts(0, 1, textMessage2, (uint8_t*)&sizeText2);
+			TM_HD44780_Puts(0, 0, textMessage1, (uint8_t*)sizeText1);
+			TM_HD44780_Puts(0, 1, textMessage2, (uint8_t*)sizeText2);
 		}
 		// Отправляем задачу спать
 		vTaskSuspend(NULL);
 	}
-	/* USER CODE END StartLCDTask */
+  /* USER CODE END StartLCDTask */
 }
 
 /* StartLEDmatrixTask function */
 void StartLEDmatrixTask(void const * argument)
 {
-	/* USER CODE BEGIN StartLEDmatrixTask */
+  /* USER CODE BEGIN StartLEDmatrixTask */
 	/* Infinite loop */
 	for(;;)
 	{
@@ -1516,13 +1530,13 @@ void StartLEDmatrixTask(void const * argument)
 		}
 		osDelay(1);
 	}
-	/* USER CODE END StartLEDmatrixTask */
+  /* USER CODE END StartLEDmatrixTask */
 }
 
 /* StartAudioMessageTask function */
 void StartAudioMessageTask(void const * argument)
 {
-	/* USER CODE BEGIN StartAudioMessageTask */
+  /* USER CODE BEGIN StartAudioMessageTask */
 	/* Infinite loop */
 	for(;;)
 	{
@@ -1544,106 +1558,106 @@ void StartAudioMessageTask(void const * argument)
 		// Отправляем текущую задачу спать
 		vTaskSuspend(NULL);
 	}
-	/* USER CODE END StartAudioMessageTask */
+  /* USER CODE END StartAudioMessageTask */
 }
 
 /* StartRGBws2812bTask function */
 void StartRGBws2812bTask(void const * argument)
 {
-	/* USER CODE BEGIN StartRGBws2812bTask */
+  /* USER CODE BEGIN StartRGBws2812bTask */
 	/* Infinite loop */
 	for(;;)
 	{
 
-		while(1)
-			{
-				WS2812_send(&rainbow[10], 4);
-				osDelay(50);
-			}
-		for (uint16_t i = 0; i < 7*256; i += 1)
-		{
-			WS2812_send(&rainbow[i], 4);
-			HAL_Delay(100);
-		}
+//		while(1)
+//		{
+//			WS2812_send(&rainbow[10], 4);
+//			osDelay(50);
+//		}
+				for (uint16_t i = 0; i < 3*4*256; i += 1)
+				{
+					WS2812_send(&rainbow[i], QUANTITY_OF_LED);
+					HAL_Delay(50);
+				}
 		/* first cycle through the colors on 2 LEDs chained together
 		 * last LED in the chain will receive first sent triplet
 		 * --> last LED in the chain will 'lead'
 		 */
-		for (uint16_t i = 0; i < 766; i += 4)
-		{
-			WS2812_send(&eightbit[i], 4);
-			HAL_Delay(500);
-		}
+//				for (uint16_t i = 0; i < 766; i += 1)
+//				{
+//					WS2812_send(&eightbit[i], 4);
+//					HAL_Delay(100);
+//				}
 
 
 
 		osDelay(1);
 	}
-	/* USER CODE END StartRGBws2812bTask */
+  /* USER CODE END StartRGBws2812bTask */
 }
 
 /**
- * @brief  Period elapsed callback in non blocking mode
- * @note   This function is called  when TIM2 interrupt took place, inside
- * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
- * a global variable "uwTick" used as application time base.
- * @param  htim : TIM handle
- * @retval None
- */
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM2 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	/* USER CODE BEGIN Callback 0 */
+/* USER CODE BEGIN Callback 0 */
 
-	/* USER CODE END Callback 0 */
-	if (htim->Instance == TIM2) {
-		HAL_IncTick();
-	}
-	/* USER CODE BEGIN Callback 1 */
+/* USER CODE END Callback 0 */
+  if (htim->Instance == TIM2) {
+    HAL_IncTick();
+  }
+/* USER CODE BEGIN Callback 1 */
 
-	/* USER CODE END Callback 1 */
+/* USER CODE END Callback 1 */
 }
 
 /**
- * @brief  This function is executed in case of error occurrence.
- * @param  None
- * @retval None
- */
+  * @brief  This function is executed in case of error occurrence.
+  * @param  None
+  * @retval None
+  */
 void _Error_Handler(char * file, int line)
 {
-	/* USER CODE BEGIN Error_Handler_Debug */
+  /* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 	while(1)
 	{
 	}
-	/* USER CODE END Error_Handler_Debug */
+  /* USER CODE END Error_Handler_Debug */ 
 }
 
 #ifdef USE_FULL_ASSERT
 
 /**
- * @brief Reports the name of the source file and the source line number
- * where the assert_param error has occurred.
- * @param file: pointer to the source file name
- * @param line: assert_param error line source number
- * @retval None
- */
+   * @brief Reports the name of the source file and the source line number
+   * where the assert_param error has occurred.
+   * @param file: pointer to the source file name
+   * @param line: assert_param error line source number
+   * @retval None
+   */
 void assert_failed(uint8_t* file, uint32_t line)
 {
-	/* USER CODE BEGIN 6 */
+  /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	/* USER CODE END 6 */
+  /* USER CODE END 6 */
 
 }
 
 #endif
 
 /**
- * @}
- */
+  * @}
+  */ 
 
 /**
- * @}
- */
+  * @}
+*/ 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
