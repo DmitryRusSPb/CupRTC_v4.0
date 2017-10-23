@@ -193,43 +193,39 @@ void TM_HD44780_Puts(uint8_t x, uint8_t y, uint8_t *str, uint8_t len)
 	// текст был посередине
 	x = (LENGTH_OF_LINE_LCD/2) - (numOfsymbol/2);
 
-	// Если текст был не кратен двум, то свдигем
+	// Если длина текста меньше 16, то двигаем
 	// ячейку на единицу влево
 	if(x != 0) x--;
 
+	// Устанавливаем курсор в заданную ячейку
 	TM_HD44780_CursorSet(x, y);
 
 	while(len != 0)
 	{
-		/*Так я пометил место изменения. Если убрать комменты и удалить строчки, то будет норм*/
-		//		// 1 - rus
-		//		// 0 - eng
-		//		if(language)
-		//		{
 		// Если встретили подобные символы в массиве, то делай следующее:
-		if (*str == '\n')														/**/
-		{                                         								/**/
-			// Прибавляем единицу к смещению курсора по вертикали				/**/
-			HD44780_Opts.currentY++;											/**/
-			// Устанавливаем курсор на новое место								/**/
-			TM_HD44780_CursorSet(HD44780_Opts.currentX, HD44780_Opts.currentY); /**/
+		if (*str == '\n')
+		{
+			// Прибавляем единицу к смещению курсора по вертикали
+			HD44780_Opts.currentY++;
+			// Устанавливаем курсор на новое место
+			TM_HD44780_CursorSet(HD44780_Opts.currentX, HD44780_Opts.currentY);
 			len--;
 			str++;
-		} else if (*str == '\r')												/**/
-		{																		/**/
-			// Устанавливаем курсор в начало строки								/**/
-			TM_HD44780_CursorSet(0, HD44780_Opts.currentY);						/**/
+		} else if (*str == '\r')
+		{
+			// Устанавливаем курсор в начало строки
+			TM_HD44780_CursorSet(0, HD44780_Opts.currentY);
 			len--;
 			str++;
-		}																		/**/
-		else																	/**/
-		{																		/**/
+		}
+		else
+		{
 			// Если смещение курсора больше, чем длина строки дисплея,
 			// то скорллим строчку
 			if (HD44780_Opts.currentX >= HD44780_Opts.Cols)
 			{
-				// Ждём 500 тактов....зачем?
-				HAL_Delay(500);
+				// Ждём 500 мс, чтобы был заметен сдвиг текста
+				osDelay(500);
 				// Скроллим фразу, то есть двигаем её влево, а справа
 				// у нас появляется свободная ячейка
 				TM_HD44780_ScrollLeft();
@@ -273,28 +269,6 @@ void TM_HD44780_Puts(uint8_t x, uint8_t y, uint8_t *str, uint8_t len)
 			}
 			// Двигаем курсор вправо
 			HD44780_Opts.currentX++;
-
-			//		}
-			//		else
-			//		{
-			//		if (HD44780_Opts.currentX >= HD44780_Opts.Cols)
-			//		{
-			//			HAL_Delay(500);
-			//			TM_HD44780_ScrollLeft();
-			//			HD44780_Opts.currentX--;
-			//		}
-			//		if (*str == '\n') {
-			//			HD44780_Opts.currentY++;
-			//			TM_HD44780_CursorSet(HD44780_Opts.currentX, HD44780_Opts.currentY);
-			//		} else if (*str == '\r') {
-			//			TM_HD44780_CursorSet(0, HD44780_Opts.currentY);
-			//		} else {
-			//			TM_HD44780_Data(*str);
-			//			HD44780_Opts.currentX++;
-			//		}
-			//		str++;
-			//		}
-			/**/
 		}
 	}
 }

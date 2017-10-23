@@ -1124,17 +1124,17 @@ AnswerStatus SU_FLASH_Save_User_Data(speex_data parsData, uint8_t numReceivedByt
  * This will result in the RGB triplet passed by argument 1 being sent to
  * the LED that is the furthest away from the controller (the point where
  * data is injected into the chain)
+ * Функция принимает на вход три значения для каждого из трёх цветов
+ * и количество светодиодов
  */
 void WS2812_send(uint8_t redLED,uint8_t greenLED, uint8_t blueLED, uint16_t len)
 {
 	uint8_t j;
-	uint8_t led;
-	uint16_t memaddr;
-	uint16_t buffersize;
+	uint16_t memaddr; 	 // Номер элемента в массиве
+	uint16_t buffersize; // Размер массива, в который будет вестись запись
 
 	buffersize = (len*24) + TRAILING_BYTES;	// number of bytes needed is #LEDs * 24 bytes + 42 trailing bytes
 	memaddr = 0;							// reset buffer memory index
-	led = 0;								// reset led index
 	// fill transmit buffer with correct compare values to achieve
 	// correct pulse widths according to color values
 	while (len != 0)
@@ -1177,8 +1177,6 @@ void WS2812_send(uint8_t redLED,uint8_t greenLED, uint8_t blueLED, uint16_t len)
 			}
 			memaddr++;
 		}
-
-		led++;
 		len--;
 	}
 	// add needed delay at end of byte cycle, pulsewidth = 0
@@ -1214,7 +1212,6 @@ void StartAdminLaunchTask(void const * argument)
 
 	/* USER CODE BEGIN 5 */
 	/* Infinite loop */
-	uint32_t multipleMessageSize;
 	// Отправляем все остальные задачи спать, так как пока что-то делать не требуется
 	vTaskSuspend(AudioMessageHandle);
 	vTaskSuspend(LCDHandle);
@@ -1587,10 +1584,7 @@ void StartRGBws2812bTask(void const * argument)
 			WS2812_send(eightbit[i][0], eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);
 			osDelay(50);
 		}
-
-
-
-		osDelay(1);
+		osDelay(2500);
 	}
 	/* USER CODE END StartRGBws2812bTask */
 }
