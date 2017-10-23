@@ -210,7 +210,7 @@ AnswerStatus SU_FLASH_Save_User_Data(speex_data parsData, uint8_t numReceivedByt
 /// На выходе получаем 1 или 0
 GPIO_PinState AntiContactBounce(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
-void WS2812_send(uint8_t (*color)[3], uint16_t len);
+void WS2812_send(uint8_t redLED,uint8_t greenLED, uint8_t blueLED, uint16_t len);
 
 EXIT DrawVert(uint8_t* array, int symbol, uint8_t speed);
 EXIT DrawGor(uint8_t* array, int symbol, uint8_t speed);
@@ -1125,7 +1125,7 @@ AnswerStatus SU_FLASH_Save_User_Data(speex_data parsData, uint8_t numReceivedByt
  * the LED that is the furthest away from the controller (the point where
  * data is injected into the chain)
  */
-void WS2812_send(uint8_t (*color)[3], uint16_t len)
+void WS2812_send(uint8_t redLED,uint8_t greenLED, uint8_t blueLED, uint16_t len)
 {
 	uint8_t j;
 	uint8_t led;
@@ -1133,15 +1133,15 @@ void WS2812_send(uint8_t (*color)[3], uint16_t len)
 	uint16_t buffersize;
 
 	buffersize = (len*24) + TRAILING_BYTES;	// number of bytes needed is #LEDs * 24 bytes + 42 trailing bytes
-	memaddr = 0;				// reset buffer memory index
-	led = 0;					// reset led index
+	memaddr = 0;							// reset buffer memory index
+	led = 0;								// reset led index
 	// fill transmit buffer with correct compare values to achieve
 	// correct pulse widths according to color values
-	while (len)
+	while (len != 0)
 	{
 		for (j = 0; j < 8; j++)					// GREEN data
 		{
-			if ( (color[led][1]<<j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			if ( (greenLED << j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
 				LED_BYTE_Buffer[memaddr] = 17; 	// compare value for logical 1
 			}
@@ -1154,7 +1154,7 @@ void WS2812_send(uint8_t (*color)[3], uint16_t len)
 
 		for (j = 0; j < 8; j++)					// RED data
 		{
-			if ( (color[led][0]<<j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			if ( (redLED << j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
 				LED_BYTE_Buffer[memaddr] = 17; 	// compare value for logical 1
 			}
@@ -1167,7 +1167,7 @@ void WS2812_send(uint8_t (*color)[3], uint16_t len)
 
 		for (j = 0; j < 8; j++)					// BLUE data
 		{
-			if ( (color[led][2]<<j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			if ( (blueLED << j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
 				LED_BYTE_Buffer[memaddr] = 17; 	// compare value for logical 1
 			}
@@ -1411,7 +1411,7 @@ void StartUSARTTask(void const * argument)
 					// Обнуляем счётчик полоски
 					updateLine = 0;
 					// Выводим сообщение об обновлении, так как оно стёрлось
-					TM_HD44780_Puts(0, 0,(uint8_t*)&("Идёт обновление"), 15);
+					TM_HD44780_Puts(0, 0, UPDATE_TEXT, LEN_UPDATE_TEXT);
 				}
 				// Выводим элемент полоски загрузки на LCD
 				TM_HD44780_PutCustom(updateLine, 1, 255);
@@ -1584,7 +1584,7 @@ void StartRGBws2812bTask(void const * argument)
 		 */
 		for (uint16_t i = 0; i < 766; i += 1)
 		{
-			WS2812_send(&eightbit[i], QUANTITY_OF_LED);
+			WS2812_send(eightbit[i][0], eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);
 			osDelay(50);
 		}
 

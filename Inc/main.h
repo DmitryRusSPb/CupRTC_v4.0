@@ -112,14 +112,16 @@
 #define LENGTH_OF_LINE_LCD    	16
 #define NUMBER_OF_LINES_LCD   	2
 
+#define UPDATE_TEXT				"Идёт обновление!"
 #define DEMO_TEXT_1             "Демо текст 1"
 #define DEMO_TEXT_2             "Demo text 2"
 #define LEN_DEMO_TEXT_1         strlen(DEMO_TEXT_1)
 #define LEN_DEMO_TEXT_2         strlen(DEMO_TEXT_2)
+#define LEN_UPDATE_TEXT			strlen(UPDATE_TEXT)
 
 #define QUANTITY_OF_LED  		8 // Не знаю пока почему, но 4 светодиода работают
 								  // нормально только в том случае, если их количество указывать в 2 раза больше
-#define TRAILING_BYTES			42
+#define TRAILING_BYTES			50
 
 typedef enum
 {

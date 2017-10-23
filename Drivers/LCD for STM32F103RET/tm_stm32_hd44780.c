@@ -195,7 +195,7 @@ void TM_HD44780_Puts(uint8_t x, uint8_t y, uint8_t *str, uint8_t len)
 
 	// Если текст был не кратен двум, то свдигем
 	// ячейку на единицу влево
-	if(x % 2) x--;
+	if(x != 0) x--;
 
 	TM_HD44780_CursorSet(x, y);
 
