@@ -65,7 +65,7 @@
 /*.................................FLASH......................................*/
 // Адрес начальной страницы в памяти, а также
 // адрес места в памяти для хранения занятого на соревнованиях места
-#define START_FLASH_PAGE       0x8012130
+#define START_FLASH_PAGE       0x801A000
 
 // Адрес места в памяти для хранения размера Text1
 #define SIZE_TEXT1_address     (START_FLASH_PAGE + 0x00000004)
@@ -117,7 +117,8 @@
 #define LEN_DEMO_TEXT_1         strlen(DEMO_TEXT_1)
 #define LEN_DEMO_TEXT_2         strlen(DEMO_TEXT_2)
 
-#define QUANTITY_OF_LED  		4
+#define QUANTITY_OF_LED  		8 // Не знаю пока почему, но 4 светодиода работают
+								  // нормально только в том случае, если их количество указывать в 2 раза больше
 #define TRAILING_BYTES			42
 
 typedef enum
