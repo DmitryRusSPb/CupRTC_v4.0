@@ -119,9 +119,14 @@
 #define LEN_DEMO_TEXT_2         strlen(DEMO_TEXT_2)
 #define LEN_UPDATE_TEXT			strlen(UPDATE_TEXT)
 
-#define QUANTITY_OF_LED  		8 // Не знаю пока почему, но 4 светодиода работают
-								  // нормально только в том случае, если их количество указывать в 2 раза больше
-#define TRAILING_BYTES			50
+/*Defaines для работы с WS2812b*/
+#define QUANTITY_OF_LED  		4 // Количество светодиодов в ленте
+#define TRAILING_BYTES			42 // Длина низкого уровня для разделения команд
+#define COUNTER_PERIOD_PWM		80 // Делитель, настраиваемый при инициализации прерываний для ШИМ
+#define PWM_FOR_RGB_HIGH		ceil(0.72*COUNTER_PERIOD_PWM) // Длина высокого уровня, необходимая
+// для создание логической единицы в WS2812b
+#define PWM_FOR_RGB_LOW			floor(0.28*COUNTER_PERIOD_PWM) // Длина высокого уровня, необходимая
+// для создание логического нуля в WS2812b
 
 typedef enum
 {

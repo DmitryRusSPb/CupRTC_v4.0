@@ -231,8 +231,8 @@ void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim_pwm)
     hdma_tim8_ch2.Init.Direction = DMA_MEMORY_TO_PERIPH;
     hdma_tim8_ch2.Init.PeriphInc = DMA_PINC_DISABLE;
     hdma_tim8_ch2.Init.MemInc = DMA_MINC_ENABLE;
-    hdma_tim8_ch2.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
-    hdma_tim8_ch2.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+    hdma_tim8_ch2.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+    hdma_tim8_ch2.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
     hdma_tim8_ch2.Init.Mode = DMA_NORMAL;
     hdma_tim8_ch2.Init.Priority = DMA_PRIORITY_VERY_HIGH;
     if (HAL_DMA_Init(&hdma_tim8_ch2) != HAL_OK)
@@ -242,6 +242,9 @@ void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim_pwm)
 
     __HAL_LINKDMA(htim_pwm,hdma[TIM_DMA_ID_CC2],hdma_tim8_ch2);
 
+    /* TIM8 interrupt Init */
+    HAL_NVIC_SetPriority(TIM8_UP_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(TIM8_UP_IRQn);
   /* USER CODE BEGIN TIM8_MspInit 1 */
 
   /* USER CODE END TIM8_MspInit 1 */
@@ -264,7 +267,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
     */
     GPIO_InitStruct.Pin = GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /* USER CODE BEGIN TIM8_MspPostInit 1 */
@@ -307,6 +310,9 @@ void HAL_TIM_PWM_MspDeInit(TIM_HandleTypeDef* htim_pwm)
 
     /* TIM8 DMA DeInit */
     HAL_DMA_DeInit(htim_pwm->hdma[TIM_DMA_ID_CC2]);
+
+    /* TIM8 interrupt DeInit */
+    HAL_NVIC_DisableIRQ(TIM8_UP_IRQn);
   /* USER CODE BEGIN TIM8_MspDeInit 1 */
 
   /* USER CODE END TIM8_MspDeInit 1 */

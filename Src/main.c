@@ -152,7 +152,7 @@ uint8_t creatCharMas[][8] = {
 //// Состояние режима "обновление"
 //uint8_t updateStatus = 0;
 //uint8_t buttonStatus = 0;
-uint32_t LED_BYTE_Buffer[QUANTITY_OF_LED*24 + TRAILING_BYTES];
+uint8_t LED_BYTE_Buffer[QUANTITY_OF_LED*24 + TRAILING_BYTES];
 
 
 uint32_t formalSizeText1;
@@ -470,9 +470,9 @@ static void MX_TIM8_Init(void)
 	TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig;
 
 	htim8.Instance = TIM8;
-	htim8.Init.Prescaler = 1;
+	htim8.Init.Prescaler = 0;
 	htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim8.Init.Period = 39;
+	htim8.Init.Period = 79;
 	htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim8.Init.RepetitionCounter = 0;
 	htim8.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -1127,70 +1127,73 @@ AnswerStatus SU_FLASH_Save_User_Data(speex_data parsData, uint8_t numReceivedByt
  * Функция принимает на вход три значения для каждого из трёх цветов
  * и количество светодиодов
  */
-void WS2812_send(uint8_t redLED,uint8_t greenLED, uint8_t blueLED, uint16_t len)
+void WS2812_send(uint8_t redLED, uint8_t greenLED, uint8_t blueLED, uint16_t len)
 {
 	uint8_t j;
-	uint16_t memaddr; 	 // Номер элемента в массиве
+	uint8_t *memaddr; 	 // Указатель на элемент в массиве
+	uint16_t recordedBytes;
 	uint16_t buffersize; // Размер массива, в который будет вестись запись
 
+	recordedBytes = 0;
 	buffersize = (len*24) + TRAILING_BYTES;	// number of bytes needed is #LEDs * 24 bytes + 42 trailing bytes
-	memaddr = 0;							// reset buffer memory index
 	// fill transmit buffer with correct compare values to achieve
 	// correct pulse widths according to color values
+	memaddr = LED_BYTE_Buffer;
 	while (len != 0)
 	{
 		for (j = 0; j < 8; j++)					// GREEN data
 		{
 			if ( (greenLED << j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
-				LED_BYTE_Buffer[memaddr] = 17; 	// compare value for logical 1
+				*memaddr = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
 			}
 			else
 			{
-				LED_BYTE_Buffer[memaddr] = 9;	// compare value for logical 0
+				*memaddr = PWM_FOR_RGB_LOW;	// compare value for logical 0
 			}
 			memaddr++;
+			recordedBytes++;
 		}
 
 		for (j = 0; j < 8; j++)					// RED data
 		{
 			if ( (redLED << j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
-				LED_BYTE_Buffer[memaddr] = 17; 	// compare value for logical 1
+				*memaddr = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
 			}
 			else
 			{
-				LED_BYTE_Buffer[memaddr] = 9;	// compare value for logical 0
+				*memaddr = PWM_FOR_RGB_LOW;	// compare value for logical 0
 			}
 			memaddr++;
+			recordedBytes++;
 		}
 
 		for (j = 0; j < 8; j++)					// BLUE data
 		{
-			if ( (blueLED << j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			if ( (blueLED << j) & 0x80 )		// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
-				LED_BYTE_Buffer[memaddr] = 17; 	// compare value for logical 1
+				*memaddr = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
 			}
 			else
 			{
-				LED_BYTE_Buffer[memaddr] = 9;	// compare value for logical 0
+				*memaddr = PWM_FOR_RGB_LOW;		// compare value for logical 0
 			}
 			memaddr++;
+			recordedBytes++;
 		}
 		len--;
 	}
 	// add needed delay at end of byte cycle, pulsewidth = 0
-	while(memaddr < buffersize)
+	while(recordedBytes < buffersize)
 	{
-		LED_BYTE_Buffer[memaddr] = 0;
+		*memaddr = 0;
 		memaddr++;
+		recordedBytes++;
 	}
-	// Запускаем таймер
-	HAL_TIM_Base_Start(&htim8);
 	// Запускаем передачу и включаем шим
 	HAL_TIM_PWM_Start_DMA(&htim8, TIM_CHANNEL_2, (uint32_t*)LED_BYTE_Buffer, buffersize);
-	// Выключаем таймер
-	HAL_TIM_Base_Stop(&htim8);
+	while(HAL_DMA_GetState(&hdma_tim8_ch2) == HAL_DMA_STATE_BUSY) osDelay(100);
 }
 
 GPIO_PinState AntiContactBounce(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
@@ -1564,17 +1567,6 @@ void StartRGBws2812bTask(void const * argument)
 	/* Infinite loop */
 	for(;;)
 	{
-
-		//		while(1)
-		//		{
-		//			WS2812_send(&rainbow[3*256], QUANTITY_OF_LED);
-		//			osDelay(50);
-		//		}
-		//		for (uint16_t i = 0; i < 3*256; i += 1)
-		//		{
-		//			WS2812_send(&rainbow[i], QUANTITY_OF_LED);
-		//			osDelay(50);
-		//		}
 		/* first cycle through the colors on 2 LEDs chained together
 		 * last LED in the chain will receive first sent triplet
 		 * --> last LED in the chain will 'lead'
