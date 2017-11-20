@@ -211,6 +211,7 @@ AnswerStatus SU_FLASH_Save_User_Data(speex_data parsData, uint8_t numReceivedByt
 GPIO_PinState AntiContactBounce(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
 void WS2812_send(uint8_t redLED,uint8_t greenLED, uint8_t blueLED, uint16_t len);
+void WS2812_send_noPTR(uint8_t redLED, uint8_t greenLED, uint8_t blueLED, uint16_t len);
 
 EXIT DrawVert(uint8_t* array, int symbol, uint8_t speed);
 EXIT DrawGor(uint8_t* array, int symbol, uint8_t speed);
@@ -465,6 +466,7 @@ static void MX_TIM3_Init(void)
 static void MX_TIM8_Init(void)
 {
 
+	TIM_ClockConfigTypeDef sClockSourceConfig;
 	TIM_MasterConfigTypeDef sMasterConfig;
 	TIM_OC_InitTypeDef sConfigOC;
 	TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig;
@@ -476,6 +478,17 @@ static void MX_TIM8_Init(void)
 	htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim8.Init.RepetitionCounter = 0;
 	htim8.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	if (HAL_TIM_Base_Init(&htim8) != HAL_OK)
+	{
+		_Error_Handler(__FILE__, __LINE__);
+	}
+
+	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+	if (HAL_TIM_ConfigClockSource(&htim8, &sClockSourceConfig) != HAL_OK)
+	{
+		_Error_Handler(__FILE__, __LINE__);
+	}
+
 	if (HAL_TIM_PWM_Init(&htim8) != HAL_OK)
 	{
 		_Error_Handler(__FILE__, __LINE__);
@@ -1130,48 +1143,49 @@ AnswerStatus SU_FLASH_Save_User_Data(speex_data parsData, uint8_t numReceivedByt
 void WS2812_send(uint8_t redLED, uint8_t greenLED, uint8_t blueLED, uint16_t len)
 {
 	uint8_t j;
-	uint8_t *memaddr; 	 // Указатель на элемент в массиве
+	uint8_t *memaddr; 	 	// Указатель на элемент в массиве
 	uint16_t recordedBytes;
-	uint16_t buffersize; // Размер массива, в который будет вестись запись
+	uint16_t buffersize; 	// Размер массива, в который будет вестись запись
 
 	recordedBytes = 0;
 	buffersize = (len*24) + TRAILING_BYTES;	// number of bytes needed is #LEDs * 24 bytes + 42 trailing bytes
 	// fill transmit buffer with correct compare values to achieve
 	// correct pulse widths according to color values
 	memaddr = LED_BYTE_Buffer;
+
 	while (len != 0)
 	{
-		for (j = 0; j < 8; j++)					// GREEN data
+		for (j = 0; j < 8; j++)				// GREEN data
 		{
 			if ( (greenLED << j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
-				*memaddr = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+				*memaddr = PWM_FOR_RGB_HIGH; 		// compare value for logical 1
 			}
 			else
 			{
-				*memaddr = PWM_FOR_RGB_LOW;	// compare value for logical 0
+				*memaddr = PWM_FOR_RGB_LOW;		// compare value for logical 0
 			}
 			memaddr++;
 			recordedBytes++;
 		}
 
-		for (j = 0; j < 8; j++)					// RED data
+		for (j = 0; j < 8; j++)				// RED data
 		{
-			if ( (redLED << j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			if ( (redLED << j) & 0x80 )		// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
-				*memaddr = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+				*memaddr = PWM_FOR_RGB_HIGH; 		// compare value for logical 1
 			}
 			else
 			{
-				*memaddr = PWM_FOR_RGB_LOW;	// compare value for logical 0
+				*memaddr = PWM_FOR_RGB_LOW;		// compare value for logical 0
 			}
 			memaddr++;
 			recordedBytes++;
 		}
 
-		for (j = 0; j < 8; j++)					// BLUE data
+		for (j = 0; j < 8; j++)				// BLUE data
 		{
-			if ( (blueLED << j) & 0x80 )		// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			if ( (blueLED << j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
 				*memaddr = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
 			}
@@ -1193,8 +1207,79 @@ void WS2812_send(uint8_t redLED, uint8_t greenLED, uint8_t blueLED, uint16_t len
 	}
 	// Запускаем передачу и включаем шим
 	HAL_TIM_PWM_Start_DMA(&htim8, TIM_CHANNEL_2, (uint32_t*)LED_BYTE_Buffer, buffersize);
-	while(HAL_DMA_GetState(&hdma_tim8_ch2) == HAL_DMA_STATE_BUSY) osDelay(100);
+	while(HAL_DMA_GetState(&hdma_tim8_ch2) == HAL_DMA_STATE_BUSY) osDelay(10);
 }
+
+/************************************************************************************/
+void WS2812_send_noPTR(uint8_t redLED, uint8_t greenLED, uint8_t blueLED, uint16_t len)
+{
+	uint8_t j;
+	uint8_t led;
+	uint16_t memaddr;
+	uint16_t buffersize;
+
+	buffersize = (len*24)+TRAILING_BYTES;	// number of bytes needed is #LEDs * 24 bytes + 42 trailing bytes
+	memaddr = 0;				// reset buffer memory index
+	led = 0;					// reset led index
+
+	// fill transmit buffer with correct compare values to achieve
+	// correct pulse widths according to color values
+	while (len)
+	{
+		for (j = 0; j < 8; j++)					// GREEN data
+		{
+			if ( (greenLED<<j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+			}
+			else
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;	// compare value for logical 0
+			}
+			memaddr++;
+		}
+
+		for (j = 0; j < 8; j++)					// RED data
+		{
+			if ( (redLED<<j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+			}
+			else
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;	// compare value for logical 0
+			}
+			memaddr++;
+		}
+
+		for (j = 0; j < 8; j++)					// BLUE data
+		{
+			if ( (blueLED<<j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+			}
+			else
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;	// compare value for logical 0
+			}
+			memaddr++;
+		}
+
+		led++;
+		len--;
+	}
+
+	// add needed delay at end of byte cycle, pulsewidth = 0
+	while(memaddr < buffersize)
+	{
+		LED_BYTE_Buffer[memaddr] = 0;
+		memaddr++;
+	}
+	// Запускаем передачу и включаем шим
+	HAL_TIM_PWM_Start_DMA(&htim8, TIM_CHANNEL_2, (uint32_t*)LED_BYTE_Buffer, buffersize);
+	while(HAL_DMA_GetState(&hdma_tim8_ch2) == HAL_DMA_STATE_BUSY) osDelay(10);
+}
+/************************************************************************************/
 
 GPIO_PinState AntiContactBounce(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
@@ -1573,10 +1658,16 @@ void StartRGBws2812bTask(void const * argument)
 		 */
 		for (uint16_t i = 0; i < 766; i += 1)
 		{
-			WS2812_send(eightbit[i][0], eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);
-			osDelay(50);
+			WS2812_send_noPTR(eightbit[i][0], eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);//eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);
+			osDelay(300);
 		}
-		osDelay(2500);
+//		osDelay(5000);
+//		for (uint16_t i = 0; i < 766; i += 1)
+//		{
+//			WS2812_send(eightbit[i][0], eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);//eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);
+//			osDelay(300);
+//		}
+		//osDelay(2500);
 	}
 	/* USER CODE END StartRGBws2812bTask */
 }

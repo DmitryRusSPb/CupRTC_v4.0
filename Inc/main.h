@@ -95,7 +95,7 @@
 #define MEMORY_PAGE_SIZE  	   2048
 
 // Скорость прокрутки изображений на LED_MATRIX (больше значение == меньше скорость)
-#define SPEED                  1
+#define SPEED                  10
 
 //............................LED MATRIX.....................................//
 #define PORT_NCC    GPIOA        // Ножка CS led matrix
@@ -120,12 +120,12 @@
 #define LEN_UPDATE_TEXT			strlen(UPDATE_TEXT)
 
 /*Defaines для работы с WS2812b*/
-#define QUANTITY_OF_LED  		4 // Количество светодиодов в ленте
-#define TRAILING_BYTES			42 // Длина низкого уровня для разделения команд
-#define COUNTER_PERIOD_PWM		80 // Делитель, настраиваемый при инициализации прерываний для ШИМ
-#define PWM_FOR_RGB_HIGH		ceil(0.72*COUNTER_PERIOD_PWM) // Длина высокого уровня, необходимая
+#define QUANTITY_OF_LED  		4 	// Количество светодиодов в ленте
+#define TRAILING_BYTES			48 	// Длина низкого уровня для разделения команд
+#define COUNTER_PERIOD_PWM		80 	// Делитель, настраиваемый при инициализации прерываний для ШИМ
+#define PWM_FOR_RGB_HIGH		(uint8_t)ceil(0.72*COUNTER_PERIOD_PWM)  // Длина высокого уровня, необходимая
 // для создание логической единицы в WS2812b
-#define PWM_FOR_RGB_LOW			floor(0.28*COUNTER_PERIOD_PWM) // Длина высокого уровня, необходимая
+#define PWM_FOR_RGB_LOW			(uint8_t)floor(0.28*COUNTER_PERIOD_PWM) // Длина высокого уровня, необходимая
 // для создание логического нуля в WS2812b
 
 typedef enum
