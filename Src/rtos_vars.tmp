@@ -1,0 +1,7 @@
+osThreadId AdminLaunchHandle;
+osThreadId ButtonHandle;
+osThreadId USARTHandle;
+osThreadId LCDHandle;
+osThreadId LEDmatrixHandle;
+osThreadId AudioMessageHandle;
+osThreadId RGBws2812bHandle;

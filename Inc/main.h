@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * File Name          : main.h
+  * File Name          : main.hpp
   * Description        : This file contains the common defines of the application
   ******************************************************************************
   * This notice applies to any and all portions of this file
@@ -50,11 +50,19 @@
 #define __MAIN_H
   /* Includes ------------------------------------------------------------------*/
 
+/* Includes ------------------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
 /* Private define ------------------------------------------------------------*/
+
+/* ########################## Assert Selection ############################## */
+/**
+  * @brief Uncomment the line below to expanse the "assert_param" macro in the 
+  *        HAL drivers code
+  */
+/* #define USE_FULL_ASSERT    1U */
 
 /* USER CODE BEGIN Private defines */
 // Количество опро
@@ -98,16 +106,16 @@
 #define SPEED                  10
 
 //............................LED MATRIX.....................................//
-#define PORT_NCC    GPIOA        // Ножка CS led matrix
-#define PIN_NCC     GPIO_PIN_6
+#define PORT_NCC    GPIOB        // Ножка CS led matrix
+#define PIN_NCC     GPIO_PIN_12
 
 //...............................SPEEX.......................................//
 #define FRAME_SIZE              160
 #define ENCODED_FRAME_SIZE      20
 #define SIZE_BUFF               60
 
-#define BUTTON_GPIO_PORT        GPIOB
-#define BUTTON_GPIO_PIN         GPIO_PIN_6
+#define BUTTON_GPIO_PORT        GPIOA
+#define BUTTON_GPIO_PIN         GPIO_PIN_11
 
 #define LENGTH_OF_LINE_LCD    	16
 #define NUMBER_OF_LINES_LCD   	2
@@ -157,9 +165,15 @@ typedef enum
 
 /* USER CODE END Private defines */
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
 void _Error_Handler(char *, int);
 
 #define Error_Handler() _Error_Handler(__FILE__, __LINE__)
+#ifdef __cplusplus
+}
+#endif
 
 /**
   * @}

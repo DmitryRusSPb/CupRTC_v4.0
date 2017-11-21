@@ -1,0 +1,15 @@
+
+#n#n/* StartAdminLaunchTask function */
+void StartAdminLaunchTask(void const * argument)
+{
+
+#n
+#t/* USER CODE BEGIN 5 */
+#t/* Infinite loop */
+#tfor(;;)
+#t{
+#t#tosDelay(1);
+#t}
+#t/* USER CODE END 5 */ 
+}
+#n

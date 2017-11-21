@@ -130,34 +130,34 @@ K     GND               Ground for back light
 /* Control pins, can be overwritten */
 /* RS - Register select pin */
 #ifndef HD44780_RS_PIN
-#define HD44780_RS_PORT				GPIOB
-#define HD44780_RS_PIN				GPIO_PIN_2
+#define HD44780_RS_PORT				GPIOA
+#define HD44780_RS_PIN				GPIO_PIN_10
 #endif
 /* E - Enable pin */
 #ifndef HD44780_E_PIN
-#define HD44780_E_PORT				GPIOB
-#define HD44780_E_PIN				GPIO_PIN_7
+#define HD44780_E_PORT				GPIOA
+#define HD44780_E_PIN				GPIO_PIN_9
 #endif
 /* Data pins */
 /* D4 - Data 4 pin */
 #ifndef HD44780_D4_PIN
-#define HD44780_D4_PORT				GPIOC
-#define HD44780_D4_PIN				GPIO_PIN_12
+#define HD44780_D4_PORT				GPIOA
+#define HD44780_D4_PIN				GPIO_PIN_8
 #endif
 /* D5 - Data 5 pin */
 #ifndef HD44780_D5_PIN
 #define HD44780_D5_PORT				GPIOC
-#define HD44780_D5_PIN				GPIO_PIN_13
+#define HD44780_D5_PIN				GPIO_PIN_9
 #endif
 /* D6 - Data 6 pin */
 #ifndef HD44780_D6_PIN
-#define HD44780_D6_PORT				GPIOB
-#define HD44780_D6_PIN				GPIO_PIN_12
+#define HD44780_D6_PORT				GPIOC
+#define HD44780_D6_PIN				GPIO_PIN_8
 #endif
 /* D7 - Data 7 pin */
 #ifndef HD44780_D7_PIN
-#define HD44780_D7_PORT				GPIOB
-#define HD44780_D7_PIN				GPIO_PIN_13
+#define HD44780_D7_PORT				GPIOC
+#define HD44780_D7_PIN				GPIO_PIN_7
 #endif
 
 /**
