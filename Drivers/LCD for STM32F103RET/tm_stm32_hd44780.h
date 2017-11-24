@@ -116,6 +116,7 @@ K     GND               Ground for back light
  - TM GPIO
 \endverbatim
  */
+#ifdef LCD_ON
 #include "stm32fxxx_hal.h"
 #include "tm_stm32_delay.h"
 #include "tm_stm32_gpio.h"
@@ -544,7 +545,7 @@ typedef enum
 //		//ERORR
 //		0x00
 //};
-
+#endif
 /**
  * @}
  */

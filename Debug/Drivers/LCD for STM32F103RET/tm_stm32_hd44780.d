@@ -1,5 +1,6 @@
 Drivers/LCD for STM32F103RET/tm_stm32_hd44780.o: \
  ../Drivers/LCD\ for\ STM32F103RET/tm_stm32_hd44780.c \
+ /home/user/workspaceSTM32/CupRTC_v4.0/Inc/main.h \
  ../Drivers/LCD\ for\ STM32F103RET/tm_stm32_hd44780.h \
  ../Drivers/LCD\ for\ STM32F103RET/stm32fxxx_hal.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h \
@@ -30,8 +31,9 @@ Drivers/LCD for STM32F103RET/tm_stm32_hd44780.o: \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
  ../Drivers/LCD\ for\ STM32F103RET/tm_stm32_gpio.h \
- ../Drivers/LCD\ for\ STM32F103RET/tm_stm32_delay.h \
- /home/user/workspaceSTM32/CupRTC_v4.0/Inc/main.h
+ ../Drivers/LCD\ for\ STM32F103RET/tm_stm32_delay.h
+
+/home/user/workspaceSTM32/CupRTC_v4.0/Inc/main.h:
 
 ../Drivers/LCD\ for\ STM32F103RET/tm_stm32_hd44780.h:
 
@@ -94,5 +96,3 @@ Drivers/LCD for STM32F103RET/tm_stm32_hd44780.o: \
 ../Drivers/LCD\ for\ STM32F103RET/tm_stm32_gpio.h:
 
 ../Drivers/LCD\ for\ STM32F103RET/tm_stm32_delay.h:
-
-/home/user/workspaceSTM32/CupRTC_v4.0/Inc/main.h:

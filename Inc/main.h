@@ -65,6 +65,7 @@
 /* #define USE_FULL_ASSERT    1U */
 
 /* USER CODE BEGIN Private defines */
+
 /*----------------------------------------------------------------------------*/
 /*--------------------------------FLASH---------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -98,7 +99,13 @@
 /*----------------------------------------------------------------------------*/
 // Если мы определяем макрос LED_MATRIX_ON, то тем самым подрубаем в проекте работу
 // с LED-матрицу 8x8
-#define LED_MATRIX_ON
+#define LED_MATRIX_OFF
+
+#ifndef LED_MATRIX_ON
+#ifndef LED_MATRIX_OFF
+#error "Please select a status macro LED_MATRIX_OFF or LED_MATRIX_ON"
+#endif
+#endif
 
 #ifdef LED_MATRIX_ON
 // Скорость прокрутки изображений на LED_MATRIX (больше значение == меньше скорость)
@@ -114,6 +121,12 @@
 // Если мы определяем макрос AUDIO_ON, то тем самым подрубаем в проект возможность
 // воспроизводить голосовое сообщение
 #define AUDIO_ON
+
+#ifndef AUDIO_ON
+#ifndef AUDIO_OFF
+#error "Please select a status macro AUDIO_OFF or AUDIO_ON"
+#endif
+#endif
 
 #ifdef AUDIO_ON
 // Количество блоков по 20 байт для тестового аудиофайла("Соединение со спутником...")
@@ -140,6 +153,12 @@
 // выводить сообщения на LCD
 #define LCD_ON
 
+#ifndef LCD_ON
+#ifndef LCD_OFF
+#error "Please select a status macro LCD_OFF or LCD_ON"
+#endif
+#endif
+
 #ifdef LCD_ON
 // Длина строки дисплея
 #define LENGTH_OF_LINE_LCD    	16
@@ -162,11 +181,34 @@
 /*----------------------------------------------------------------------------*/
 /*---------------------------------WS2812B------------------------------------*/
 /*----------------------------------------------------------------------------*/
+// Если мы определяем макрос LCD_ON, то тем самым подрубаем в проект возможность
+// работы с управляемыми светодиодами WS2812B
 #define WS2812B_ON
 
+#ifndef WS2812B_ON
+#ifndef WS2812B_OFF
+#error "Please select a status macro WS2812B_OFF or WS2812B_ON"
+#endif
+#endif
+
 #ifdef WS2812B_ON
+// Количество светодиодов в первой группе
+#define NUM_LED_OF_GROUP_ONE	1
+// Количество светодиодов во второй группе
+#define NUM_LED_OF_GROUP_TWO	2
+// Количество светодиодов в третьей группе
+#define NUM_LED_OF_GROUP_THREE	1
+// Количество групп светодиодов
+#define NUM_OF_GROUP			3
 // Количество светодиодов в ленте
 #define QUANTITY_OF_LED  		4
+
+#if((NUM_LED_OF_GROUP_ONE + NUM_LED_OF_GROUP_TWO + NUM_LED_OF_GROUP_THREE) != QUANTITY_OF_LED)
+{
+	#error QUANTITY_OF_LED and sum of NUM_LED_OF_GROUP should be equal!
+}
+#endif
+
 // Длина низкого уровня для разделения команд
 #define TRAILING_BYTES			48
 // Делитель, настраиваемый при инициализации прерываний для ШИМ

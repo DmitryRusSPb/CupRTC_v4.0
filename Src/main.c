@@ -222,6 +222,7 @@ GPIO_PinState AntiContactBounce(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 #ifdef WS2812B_ON
 //void WS2812_send(uint8_t redLED,uint8_t greenLED, uint8_t blueLED, uint16_t len);
 void WS2812_send_noPTR(uint8_t redLED, uint8_t greenLED, uint8_t blueLED, uint16_t len);
+void WS2812_send_group(uint8_t redLED1, uint8_t greenLED1, uint8_t blueLED1, uint8_t redLED2, uint8_t greenLED2, uint8_t blueLED2, uint8_t redLED3, uint8_t greenLED3, uint8_t blueLED3);
 #endif
 
 // Если мы определили макрос LED_MATRIX_ON, то используем эти строчки кода
@@ -1253,49 +1254,52 @@ void WS2812_send_noPTR(uint8_t redLED, uint8_t greenLED, uint8_t blueLED, uint16
 	uint16_t memaddr;
 	uint16_t buffersize;
 
-	buffersize = (len*24)+TRAILING_BYTES;	// number of bytes needed is #LEDs * 24 bytes + 42 trailing bytes
-	memaddr = 0;				// reset buffer memory index
-	led = 0;					// reset led index
+	// number of bytes needed is #LEDs * 24 bytes + 42 trailing bytes
+	buffersize = (len*24)+TRAILING_BYTES;
+	// reset buffer memory index
+	memaddr = 0;
+	// reset led index
+	led = 0;
 
 	// fill transmit buffer with correct compare values to achieve
 	// correct pulse widths according to color values
 	while (len)
 	{
-		for (j = 0; j < 8; j++)					// GREEN data
+		for (j = 0; j < 8; j++)									// GREEN data
 		{
-			if ( (greenLED<<j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			if ( (greenLED<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
 				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
 			}
 			else
 			{
-				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;	// compare value for logical 0
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
 			}
 			memaddr++;
 		}
 
-		for (j = 0; j < 8; j++)					// RED data
+		for (j = 0; j < 8; j++)									// RED data
 		{
-			if ( (redLED<<j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			if ( (redLED<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
 				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
 			}
 			else
 			{
-				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;	// compare value for logical 0
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
 			}
 			memaddr++;
 		}
 
-		for (j = 0; j < 8; j++)					// BLUE data
+		for (j = 0; j < 8; j++)									// BLUE data
 		{
-			if ( (blueLED<<j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			if ( (blueLED<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
 				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
 			}
 			else
 			{
-				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;	// compare value for logical 0
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
 			}
 			memaddr++;
 		}
@@ -1315,6 +1319,159 @@ void WS2812_send_noPTR(uint8_t redLED, uint8_t greenLED, uint8_t blueLED, uint16
 	while(HAL_DMA_GetState(&hdma_tim3_ch1_trig) == HAL_DMA_STATE_BUSY) osDelay(10);
 }
 /************************************************************************************/
+
+void WS2812_send_group(uint8_t redLED1, uint8_t greenLED1, uint8_t blueLED1, uint8_t redLED2, uint8_t greenLED2, uint8_t blueLED2, uint8_t redLED3, uint8_t greenLED3, uint8_t blueLED3)
+{
+	uint16_t buffersize;
+	uint16_t memaddr;
+	uint8_t j;
+	uint8_t numLedOfGroup[3];
+
+	numLedOfGroup[0] = NUM_LED_OF_GROUP_ONE;
+	numLedOfGroup[1] = NUM_LED_OF_GROUP_TWO;
+	numLedOfGroup[2] = NUM_LED_OF_GROUP_THREE;
+
+	// number of bytes needed is #LEDs * 24 bytes + 42 trailing bytes
+	buffersize = (NUM_LED_OF_GROUP_ONE + NUM_LED_OF_GROUP_ONE + NUM_LED_OF_GROUP_THREE)*24 + TRAILING_BYTES;
+	memaddr = 0;
+	while (numLedOfGroup[0])
+	{
+		for (j = 0; j < 8; j++)									// GREEN data
+		{
+			if ( (greenLED1<<j) & 0x80 )					// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+			}
+			else
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+			}
+			memaddr++;
+		}
+
+		for (j = 0; j < 8; j++)									// RED data
+		{
+			if ( (redLED1<<j) & 0x80 )					// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+			}
+			else
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+			}
+			memaddr++;
+		}
+
+		for (j = 0; j < 8; j++)									// BLUE data
+		{
+			if ( (blueLED1<<j) & 0x80 )					// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+			}
+			else
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+			}
+			memaddr++;
+		}
+		numLedOfGroup[0]--;
+	}
+
+	while (numLedOfGroup[1])
+	{
+		for (j = 0; j < 8; j++)									// GREEN data
+		{
+			if ( (greenLED2<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+			}
+			else
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+			}
+			memaddr++;
+		}
+
+		for (j = 0; j < 8; j++)									// RED data
+		{
+			if ( (redLED2<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+			}
+			else
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+			}
+			memaddr++;
+		}
+
+		for (j = 0; j < 8; j++)									// BLUE data
+		{
+			if ( (blueLED2<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+			}
+			else
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+			}
+			memaddr++;
+		}
+		numLedOfGroup[1]--;
+	}
+
+	while (numLedOfGroup[2])
+	{
+		for (j = 0; j < 8; j++)									// GREEN data
+		{
+			if ( (greenLED3<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+			}
+			else
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+			}
+			memaddr++;
+		}
+
+		for (j = 0; j < 8; j++)									// RED data
+		{
+			if ( (redLED3<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+			}
+			else
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+			}
+			memaddr++;
+		}
+
+		for (j = 0; j < 8; j++)									// BLUE data
+		{
+			if ( (blueLED3<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+			}
+			else
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+			}
+			memaddr++;
+		}
+		numLedOfGroup[2]--;
+	}
+	// add needed delay at end of byte cycle, pulsewidth = 0
+	while(memaddr < buffersize)
+	{
+		LED_BYTE_Buffer[memaddr] = 0;
+		memaddr++;
+	}
+	// Запускаем передачу и включаем шим
+	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t*)LED_BYTE_Buffer, buffersize);
+	while(HAL_DMA_GetState(&hdma_tim3_ch1_trig) == HAL_DMA_STATE_BUSY) osDelay(10);
+}
 #endif
 
 GPIO_PinState AntiContactBounce(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
@@ -1514,9 +1671,11 @@ void StartUSARTTask(void const * argument)
 			// Обнуляем счётчик полученных данных
 			allDataSize = 0;
 
+#ifdef LCD_ON
 			// Чистим экран
 			TM_HD44780_Clear();
 			updateLine = 0;
+#endif
 
 			// Сообщаем, что мы готовы к получению первого блока данных
 			answer = 's';
@@ -1749,29 +1908,34 @@ void StartRGBws2812bTask(void const * argument)
 	vTaskDelete(NULL)
 #endif
 
-	/* Infinite loop */
-	for(;;)
-	{
-#ifdef WS2812B_ON
-		/* first cycle through the colors on 2 LEDs chained together
-		 * last LED in the chain will receive first sent triplet
-		 * --> last LED in the chain will 'lead'
-		 */
-		for (uint16_t i = 0; i < 766; i += 1)
+		/* Infinite loop */
+		for(;;)
 		{
-			WS2812_send_noPTR(eightbit[i][0], eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);//eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);
-			osDelay(300);
-		}
-		//		osDelay(5000);
-		//		for (uint16_t i = 0; i < 766; i += 1)
-		//		{
-		//			WS2812_send(eightbit[i][0], eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);//eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);
-		//			osDelay(300);
-		//		}
-		//osDelay(2500);
+#ifdef WS2812B_ON
+			/* first cycle through the colors on 2 LEDs chained together
+			 * last LED in the chain will receive first sent triplet
+			 * --> last LED in the chain will 'lead'
+			 */
+			for (uint16_t i = 0; i+50 < 700; i += 1)
+			{
+				WS2812_send_group(eightbit[i][0], eightbit[i][1], eightbit[i][2], eightbit[i+50][0], eightbit[i+50][1], eightbit[i+50][2], eightbit[i][0], eightbit[i][1], eightbit[i][2]);
+				osDelay(500);
+			}
+//			for (uint16_t i = 0; i < 766; i += 1)
+//			{
+//				WS2812_send_noPTR(eightbit[i][0], eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);//eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);
+//				osDelay(300);
+//			}
+			//		osDelay(5000);
+			//		for (uint16_t i = 0; i < 766; i += 1)
+			//		{
+			//			WS2812_send(eightbit[i][0], eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);//eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);
+			//			osDelay(300);
+			//		}
+			//osDelay(2500);
 #endif
-		osDelay(1);
-	}
+			osDelay(1);
+		}
 	/* USER CODE END StartRGBws2812bTask */
 }
 

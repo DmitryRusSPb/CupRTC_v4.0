@@ -54,8 +54,7 @@ Src/main.o: ../Src/main.c \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/STM32F10x_Speex_Lib/include/speex/speex_types.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/STM32F10x_Speex_Lib/STM32/include/speex/speex_config_types.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/uart/conspeex.h \
- /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/voice/spx.h \
- /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/LedMatrix/Matrix_Control.h
+ /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/voice/spx.h
 
 /home/user/workspaceSTM32/CupRTC_v4.0/Inc/main.h:
 
@@ -168,5 +167,3 @@ Src/main.o: ../Src/main.c \
 /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/uart/conspeex.h:
 
 /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/voice/spx.h:
-
-/home/user/workspaceSTM32/CupRTC_v4.0/Drivers/LedMatrix/Matrix_Control.h:

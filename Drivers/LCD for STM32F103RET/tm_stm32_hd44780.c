@@ -23,8 +23,9 @@
  * | OTHER DEALINGS IN THE SOFTWARE.
  * |----------------------------------------------------------------------
  */
-#include "tm_stm32_hd44780.h"
 #include "main.h"
+#include "tm_stm32_hd44780.h"
+#ifdef LCD_ON
 /* Private HD44780 structure */
 typedef struct {
 	uint8_t DisplayControl;
@@ -600,3 +601,4 @@ CONVERTtoRUS ConvertRus(uint16_t rusSymb)
 	}
 	return RUSerror;
 }
+#endif
