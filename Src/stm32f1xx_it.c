@@ -37,11 +37,13 @@
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN 0 */
+#ifdef AUDIO_ON
 volatile int i=0;
 extern __IO uint8_t startDecoding;
 extern __IO int16_t *outBuff;
 extern __IO int16_t outBuffer[2][160];
 extern DAC_HandleTypeDef hdac;
+#endif
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -199,6 +201,7 @@ void TIM2_IRQHandler(void)
 void TIM6_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM6_IRQn 0 */
+#ifdef AUDIO_ON
 	uint16_t tmp;
 
 	// Сбрасываем флаг прерывания
@@ -224,6 +227,7 @@ void TIM6_IRQHandler(void)
 	{
 		outBuff++;
 	}
+#endif
   /* USER CODE END TIM6_IRQn 0 */
   HAL_TIM_IRQHandler(&htim6);
   /* USER CODE BEGIN TIM6_IRQn 1 */
