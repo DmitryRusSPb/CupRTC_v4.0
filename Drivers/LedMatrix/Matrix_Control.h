@@ -6,7 +6,7 @@
  *   - The oldest bit is first;
  *   - ChipSelect from 0 to 1, on leading edge;
  */
-
+#ifdef LED_MATRIX_ON
 #include "stdint.h"
 
 void sendData(uint16_t data);
@@ -485,3 +485,4 @@ const static uint8_t snake[][8]=
 		{0xfe,0xff,0xff,0xff,0xff,0xff,0xff,0xff},
 		{0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff}
 };
+#endif

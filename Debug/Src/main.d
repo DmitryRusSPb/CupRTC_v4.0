@@ -44,6 +44,7 @@ Src/main.o: ../Src/main.c \
  /home/user/workspaceSTM32/CupRTC_v4.0/Middlewares/Third_Party/FreeRTOS/Source/include/queue.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Middlewares/Third_Party/FreeRTOS/Source/include/timers.h \
+ /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/uart/conspeex.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/WS2812B/ws2812b.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/LCD\ for\ STM32F103RET/tm_stm32_hd44780.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/LCD\ for\ STM32F103RET/stm32fxxx_hal.h \
@@ -53,7 +54,6 @@ Src/main.o: ../Src/main.c \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/STM32F10x_Speex_Lib/include/speex/speex_bits.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/STM32F10x_Speex_Lib/include/speex/speex_types.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/STM32F10x_Speex_Lib/STM32/include/speex/speex_config_types.h \
- /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/uart/conspeex.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/voice/spx.h
 
 /home/user/workspaceSTM32/CupRTC_v4.0/Inc/main.h:
@@ -146,6 +146,8 @@ Src/main.o: ../Src/main.c \
 
 /home/user/workspaceSTM32/CupRTC_v4.0/Middlewares/Third_Party/FreeRTOS/Source/include/timers.h:
 
+/home/user/workspaceSTM32/CupRTC_v4.0/Drivers/uart/conspeex.h:
+
 /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/WS2812B/ws2812b.h:
 
 /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/LCD\ for\ STM32F103RET/tm_stm32_hd44780.h:
@@ -163,7 +165,5 @@ Src/main.o: ../Src/main.c \
 /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/STM32F10x_Speex_Lib/include/speex/speex_types.h:
 
 /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/STM32F10x_Speex_Lib/STM32/include/speex/speex_config_types.h:
-
-/home/user/workspaceSTM32/CupRTC_v4.0/Drivers/uart/conspeex.h:
 
 /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/voice/spx.h:

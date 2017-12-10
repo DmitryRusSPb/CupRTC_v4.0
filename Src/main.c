@@ -54,6 +54,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdlib.h>
 #include <string.h>
+#include "conspeex.h"
 
 #ifdef WS2812B_ON
 #include "ws2812b.h"
@@ -65,7 +66,6 @@
 
 #ifdef AUDIO_ON
 #include <speex/speex.h>
-#include "conspeex.h"
 #include "spx.h"
 #endif
 
@@ -221,8 +221,12 @@ GPIO_PinState AntiContactBounce(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
 #ifdef WS2812B_ON
 //void WS2812_send(uint8_t redLED,uint8_t greenLED, uint8_t blueLED, uint16_t len);
+void WS2812_send_group_short(uint8_t (*groupsColor)[3], uint8_t quantityOfGroups);
 void WS2812_send_noPTR(uint8_t redLED, uint8_t greenLED, uint8_t blueLED, uint16_t len);
-void WS2812_send_group(uint8_t redLED1, uint8_t greenLED1, uint8_t blueLED1, uint8_t redLED2, uint8_t greenLED2, uint8_t blueLED2, uint8_t redLED3, uint8_t greenLED3, uint8_t blueLED3);
+void WS2812_send_group(uint8_t redLED1, uint8_t greenLED1, uint8_t blueLED1,
+		uint8_t redLED2, uint8_t greenLED2, uint8_t blueLED2,
+		uint8_t redLED3, uint8_t greenLED3, uint8_t blueLED3,
+		uint8_t redLED4, uint8_t greenLED4, uint8_t blueLED4);
 #endif
 
 // Если мы определили макрос LED_MATRIX_ON, то используем эти строчки кода
@@ -304,6 +308,9 @@ int main(void)
 #ifdef AUDIO_ON
 	SpeexInit();
 #endif
+
+	//Проверяем режим работы
+
 	/* USER CODE END 2 */
 
 	/* USER CODE BEGIN RTOS_MUTEX */
@@ -320,7 +327,8 @@ int main(void)
 
 	/* Create the thread(s) */
 	/* definition and creation of AdminLaunch */
-	osThreadDef(AdminLaunch, StartAdminLaunchTask, osPriorityIdle, 0, 256);
+
+	osThreadDef(AdminLaunch, StartAdminLaunchTask, osPriorityNormal, 0, 256);
 	AdminLaunchHandle = osThreadCreate(osThread(AdminLaunch), NULL);
 
 	/* definition and creation of Button */
@@ -593,6 +601,7 @@ static void MX_GPIO_Init(void)
 
 	/* GPIO Ports Clock Enable */
 	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 
@@ -626,7 +635,7 @@ static void MX_GPIO_Init(void)
 	/*Configure GPIO pin : PA11 */
 	GPIO_InitStruct.Pin = GPIO_PIN_11;
 	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
@@ -1319,21 +1328,170 @@ void WS2812_send_noPTR(uint8_t redLED, uint8_t greenLED, uint8_t blueLED, uint16
 	while(HAL_DMA_GetState(&hdma_tim3_ch1_trig) == HAL_DMA_STATE_BUSY) osDelay(10);
 }
 /************************************************************************************/
+//void WS2812_send_group_standart(void)
+//{
+//	uint16_t buffersize;
+//	uint16_t memaddr;
+//	uint8_t j;
+//	uint8_t numLedOfGroup[3];
+//
+//	numLedOfGroup[0] = NUM_LED_OF_GROUP_ONE;
+//	numLedOfGroup[1] = NUM_LED_OF_GROUP_TWO;
+//	numLedOfGroup[2] = NUM_LED_OF_GROUP_THREE;
+//
+//	buffersize = (NUM_LED_OF_GROUP_ONE + NUM_LED_OF_GROUP_ONE + NUM_LED_OF_GROUP_THREE)*24 + TRAILING_BYTES;
+//	memaddr = 0;
+//
+//	for(uint8_t i = 0; i < 255; i++)
+//		{
+//			while (numLedOfGroup[i])
+//			{
+//				for (j = 0; j < 8; j++)									// GREEN data
+//				{
+//					if ( (0<<j) & 0x80 )				// data sent MSB first, j = 0 is MSB j = 7 is LSB
+//					{
+//						LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+//					}
+//					else
+//					{
+//						LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+//					}
+//					memaddr++;
+//				}
+//
+//				for (j = 0; j < 8; j++)									// RED data
+//				{
+//					if ( (i<<j) & 0x80 )				// data sent MSB first, j = 0 is MSB j = 7 is LSB
+//					{
+//						LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+//					}
+//					else
+//					{
+//						LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+//					}
+//					memaddr++;
+//				}
+//
+//				for (j = 0; j < 8; j++)									// BLUE data
+//				{
+//					if ( (groupsColor[i][2]<<j) & 0x80 )				// data sent MSB first, j = 0 is MSB j = 7 is LSB
+//					{
+//						LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+//					}
+//					else
+//					{
+//						LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+//					}
+//					memaddr++;
+//				}
+//				numLedOfGroup[i]--;
+//			}
+//		}
+//		// add needed delay at end of byte cycle, pulsewidth = 0
+//		while(memaddr < buffersize)
+//		{
+//			LED_BYTE_Buffer[memaddr] = 0;
+//			memaddr++;
+//		}
+//		// Запускаем передачу и включаем шим
+//		HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t*)LED_BYTE_Buffer, buffersize);
+//		while(HAL_DMA_GetState(&hdma_tim3_ch1_trig) == HAL_DMA_STATE_BUSY) osDelay(10);
+//
+//}
 
-void WS2812_send_group(uint8_t redLED1, uint8_t greenLED1, uint8_t blueLED1, uint8_t redLED2, uint8_t greenLED2, uint8_t blueLED2, uint8_t redLED3, uint8_t greenLED3, uint8_t blueLED3)
+void WS2812_send_group_short(uint8_t (*groupsColor)[3], uint8_t quantityOfGroups)
 {
 	uint16_t buffersize;
 	uint16_t memaddr;
 	uint8_t j;
-	uint8_t numLedOfGroup[3];
+	uint8_t numLedOfGroup[4];
 
 	numLedOfGroup[0] = NUM_LED_OF_GROUP_ONE;
 	numLedOfGroup[1] = NUM_LED_OF_GROUP_TWO;
 	numLedOfGroup[2] = NUM_LED_OF_GROUP_THREE;
+	numLedOfGroup[3] = NUM_LED_OF_GROUP_FOUR;
+
 
 	// number of bytes needed is #LEDs * 24 bytes + 42 trailing bytes
-	buffersize = (NUM_LED_OF_GROUP_ONE + NUM_LED_OF_GROUP_ONE + NUM_LED_OF_GROUP_THREE)*24 + TRAILING_BYTES;
+	buffersize = (NUM_LED_OF_GROUP_ONE + NUM_LED_OF_GROUP_ONE + NUM_LED_OF_GROUP_THREE + NUM_LED_OF_GROUP_FOUR)*24 + TRAILING_BYTES;
 	memaddr = 0;
+	for(uint8_t i = 0; i < QUANTITY_OF_GROUPS; i++)
+	{
+		while (numLedOfGroup[i])
+		{
+			for (j = 0; j < 8; j++)									// GREEN data
+			{
+				if ( (groupsColor[0][1]<<j) & 0x80 )				// data sent MSB first, j = 0 is MSB j = 7 is LSB
+				{
+					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+				}
+				else
+				{
+					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+				}
+				memaddr++;
+			}
+
+			for (j = 0; j < 8; j++)									// RED data
+			{
+				if ( (groupsColor[0][0]<<j) & 0x80 )				// data sent MSB first, j = 0 is MSB j = 7 is LSB
+				{
+					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+				}
+				else
+				{
+					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+				}
+				memaddr++;
+			}
+
+			for (j = 0; j < 8; j++)									// BLUE data
+			{
+				if ( (groupsColor[0][2]<<j) & 0x80 )				// data sent MSB first, j = 0 is MSB j = 7 is LSB
+				{
+					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+				}
+				else
+				{
+					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+				}
+				memaddr++;
+			}
+			numLedOfGroup[i]--;
+		}
+	}
+	// add needed delay at end of byte cycle, pulsewidth = 0
+	while(memaddr < buffersize)
+	{
+		LED_BYTE_Buffer[memaddr] = 0;
+		memaddr++;
+	}
+	// Запускаем передачу и включаем шим
+	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t*)LED_BYTE_Buffer, buffersize);
+	while(HAL_DMA_GetState(&hdma_tim3_ch1_trig) == HAL_DMA_STATE_BUSY)
+		osDelay(10);
+}
+
+
+void WS2812_send_group(uint8_t redLED1, uint8_t greenLED1, uint8_t blueLED1,
+		uint8_t redLED2, uint8_t greenLED2, uint8_t blueLED2,
+		uint8_t redLED3, uint8_t greenLED3, uint8_t blueLED3,
+		uint8_t redLED4, uint8_t greenLED4, uint8_t blueLED4)
+{
+	uint16_t buffersize;
+	uint16_t memaddr;
+	uint8_t j;
+	uint8_t numLedOfGroup[4];
+
+	numLedOfGroup[0] = NUM_LED_OF_GROUP_ONE;
+	numLedOfGroup[1] = NUM_LED_OF_GROUP_TWO;
+	numLedOfGroup[2] = NUM_LED_OF_GROUP_THREE;
+	numLedOfGroup[3] = NUM_LED_OF_GROUP_FOUR;
+
+	// number of bytes needed is #LEDs * 24 bytes + 42 trailing bytes
+	buffersize = (NUM_LED_OF_GROUP_ONE + NUM_LED_OF_GROUP_ONE + NUM_LED_OF_GROUP_THREE + NUM_LED_OF_GROUP_FOUR)*24 + TRAILING_BYTES;
+	memaddr = 0;
+
 	while (numLedOfGroup[0])
 	{
 		for (j = 0; j < 8; j++)									// GREEN data
@@ -1462,26 +1620,73 @@ void WS2812_send_group(uint8_t redLED1, uint8_t greenLED1, uint8_t blueLED1, uin
 		}
 		numLedOfGroup[2]--;
 	}
+
+	while (numLedOfGroup[3])
+		{
+			for (j = 0; j < 8; j++)									// GREEN data
+			{
+				if ( (greenLED4<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
+				{
+					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+				}
+				else
+				{
+					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+				}
+				memaddr++;
+			}
+
+			for (j = 0; j < 8; j++)									// RED data
+			{
+				if ( (redLED4<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
+				{
+					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+				}
+				else
+				{
+					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+				}
+				memaddr++;
+			}
+
+			for (j = 0; j < 8; j++)									// BLUE data
+			{
+				if ( (blueLED4<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
+				{
+					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+				}
+				else
+				{
+					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+				}
+				memaddr++;
+			}
+			numLedOfGroup[3]--;
+		}
 	// add needed delay at end of byte cycle, pulsewidth = 0
 	while(memaddr < buffersize)
 	{
 		LED_BYTE_Buffer[memaddr] = 0;
 		memaddr++;
 	}
+
 	// Запускаем передачу и включаем шим
 	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t*)LED_BYTE_Buffer, buffersize);
-	while(HAL_DMA_GetState(&hdma_tim3_ch1_trig) == HAL_DMA_STATE_BUSY) osDelay(10);
+	while(HAL_DMA_GetState(&hdma_tim3_ch1_trig) == HAL_DMA_STATE_BUSY)
+		osDelay(10);
 }
 #endif
 
 GPIO_PinState AntiContactBounce(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
 	uint8_t numOfPolls;
-	numOfPolls = 0;
-	while(HAL_GPIO_ReadPin(GPIOx, GPIO_Pin))
+	numOfPolls = 1;
+	while(!HAL_GPIO_ReadPin(GPIOx, GPIO_Pin))
 	{
 		numOfPolls++;
-		if(numOfPolls >= NUMBER_OF_POLLS) return GPIO_PIN_SET;
+		osDelay(1);
+		if(numOfPolls >= NUMBER_OF_POLLS)
+			return GPIO_PIN_SET;
 	}
 	return GPIO_PIN_RESET;
 }
@@ -1517,7 +1722,7 @@ void StartAdminLaunchTask(void const * argument)
 	for(;;)
 	{
 		// Проверяем не нажата ли кнопка
-		if(AntiContactBounce(BUTTON_GPIO_PORT, BUTTON_GPIO_PIN))
+		if(!HAL_GPIO_ReadPin(BUTTON_GPIO_PORT, BUTTON_GPIO_PIN))
 		{
 			// Включаем режим обновления
 			updateModeStatus = 1;
@@ -1541,7 +1746,8 @@ void StartAdminLaunchTask(void const * argument)
 				//содержании первого текстового сообщения
 				memcpy(textMessage1, (void *)TEXT1_address, sizeText1);
 				formalSizeText1 = sizeText1;
-				while(formalSizeText1 % 4 !=0)
+
+				while(formalSizeText1 % 4 != 0)
 				{
 					formalSizeText1++;
 				}
@@ -1593,7 +1799,7 @@ void StartButtonTask(void const * argument)
 			pressTime = 1;
 			// Крутим счётчик до тех пор пока зажата кнопка или
 			// значение счётчика меньше 255
-			while((HAL_GPIO_ReadPin(BUTTON_GPIO_PORT, BUTTON_GPIO_PIN))&&(pressTime != 255))
+			while((!HAL_GPIO_ReadPin(BUTTON_GPIO_PORT, BUTTON_GPIO_PIN))&&(pressTime != 255))
 			{
 				osDelay(100);
 				pressTime++;
@@ -1667,6 +1873,8 @@ void StartUSARTTask(void const * argument)
 		// Проверяем, включен ли режим обновления
 		if(updateModeStatus)
 		{
+			TM_HD44780_Puts(0, 0, UPDATE_TEXT, LEN_UPDATE_TEXT);
+
 			// Крутимся в цикле пока не закончится обновление
 			// Обнуляем счётчик полученных данных
 			allDataSize = 0;
@@ -1791,8 +1999,15 @@ void StartLCDTask(void const * argument)
 #ifdef LCD_ON
 		// Чистим экран
 		TM_HD44780_Clear();
+		osDelay(3000);
 		// Если включен демо-режим, то показываем демо-сообщение,
 		// если нет, то выводим текст, записанный в память
+//		for(uint8_t step; step < 255; step++)
+//		{
+//			TM_HD44780_PutCustom(0, 0, step);
+//			osDelay(100);
+//			TM_HD44780_Clear();
+//		}
 		if(demoModeStatus)
 		{
 			TM_HD44780_Puts(0, 0, DEMO_TEXT_1, LEN_DEMO_TEXT_1);
@@ -1800,8 +2015,9 @@ void StartLCDTask(void const * argument)
 		}
 		else
 		{
-			TM_HD44780_Puts(0, 0, textMessage1, (uint8_t*)sizeText1);
-			TM_HD44780_Puts(0, 1, textMessage2, (uint8_t*)sizeText2);
+			TM_HD44780_Puts(0, 0, (void *)TEXT2_address, *(uint32_t*)SIZE_TEXT2_address);
+			TM_HD44780_Puts(0, 1, (void *)TEXT1_address, *(uint32_t*)SIZE_TEXT1_address);
+
 		}
 		// Отправляем задачу спать
 		vTaskSuspend(NULL);
@@ -1877,6 +2093,10 @@ void StartAudioMessageTask(void const * argument)
 	for(;;)
 	{
 #ifdef AUDIO_ON
+		vTaskSuspend(RGBws2812bHandle);
+		WS2812_send_group(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		WS2812_send_group(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
 		// Включаем прерывания по таймеру
 		HAL_TIM_Base_Start_IT(&htim6);
 		// Включаем ЦАП
@@ -1892,6 +2112,7 @@ void StartAudioMessageTask(void const * argument)
 		// Выключаем ЦАП
 		HAL_DAC_Stop(&hdac, DAC_CHANNEL_1);
 
+		vTaskResume(RGBws2812bHandle);
 		// Отправляем текущую задачу спать
 		vTaskSuspend(NULL);
 #endif
@@ -1905,37 +2126,48 @@ void StartRGBws2812bTask(void const * argument)
 {
 	/* USER CODE BEGIN StartRGBws2812bTask */
 #ifndef WS2812B_ON
-	vTaskDelete(NULL)
+	vTaskDelete(NULL);
 #endif
 
-		/* Infinite loop */
-		for(;;)
-		{
+	/* Infinite loop */
+	for(;;)
+	{
 #ifdef WS2812B_ON
-			/* first cycle through the colors on 2 LEDs chained together
-			 * last LED in the chain will receive first sent triplet
-			 * --> last LED in the chain will 'lead'
-			 */
-			for (uint16_t i = 0; i+50 < 700; i += 1)
-			{
-				WS2812_send_group(eightbit[i][0], eightbit[i][1], eightbit[i][2], eightbit[i+50][0], eightbit[i+50][1], eightbit[i+50][2], eightbit[i][0], eightbit[i][1], eightbit[i][2]);
-				osDelay(500);
-			}
-//			for (uint16_t i = 0; i < 766; i += 1)
-//			{
-//				WS2812_send_noPTR(eightbit[i][0], eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);//eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);
-//				osDelay(300);
-//			}
-			//		osDelay(5000);
-			//		for (uint16_t i = 0; i < 766; i += 1)
-			//		{
-			//			WS2812_send(eightbit[i][0], eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);//eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);
-			//			osDelay(300);
-			//		}
-			//osDelay(2500);
-#endif
-			osDelay(1);
+		/* first cycle through the colors on 2 LEDs chained together
+		 * last LED in the chain will receive first sent triplet
+		 * --> last LED in the chain will 'lead'
+		 */
+		//		for (uint16_t i = 0; i + QUANTITY_OF_GROUPS < 766; i ++)//+= QUANTITY_OF_GROUPS)
+		//		{
+		//			WS2812_send_group_short(rainbow[i][0], QUANTITY_OF_GROUPS);
+		//			osDelay(1000);
+		//		}
+//		WS2812_send_group(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+//		WS2812_send_group(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		for (uint16_t i = 0; i+50 < 765; i++)
+		{
+			WS2812_send_group(eightbit[i][0], eightbit[i][1], eightbit[i][2],
+					eightbit[i+50][0], eightbit[i+50][1], eightbit[i+50][2],
+					eightbit[i][0], eightbit[i][1], eightbit[i][2],
+					eightbit[i+50][0], eightbit[i+50][1], eightbit[i+50][2]);
+			osDelay(1000);
 		}
+
+		//			for (uint16_t i = 0; i < 766; i += 1)
+		//			{
+		//				WS2812_send_noPTR(eightbit[i][0], eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);//eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);
+		//				osDelay(300);
+		//			}
+		//		osDelay(5000);
+		//		for (uint16_t i = 0; i < 766; i += 1)
+		//		{
+		//			WS2812_send(eightbit[i][0], eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);//eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);
+		//			osDelay(300);
+		//		}
+		//osDelay(2500);
+#endif
+		osDelay(1);
+	}
 	/* USER CODE END StartRGBws2812bTask */
 }
 
