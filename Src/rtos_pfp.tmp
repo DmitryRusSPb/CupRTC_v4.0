@@ -1,7 +1,5 @@
-void StartAdminLaunchTask(void const * argument);
 void StartButtonTask(void const * argument);
-void StartUSARTTask(void const * argument);
-void StartLCDTask(void const * argument);
 void StartLEDmatrixTask(void const * argument);
 void StartAudioMessageTask(void const * argument);
 void StartRGBws2812bTask(void const * argument);
+void StartUSARTTask(void const * argument);

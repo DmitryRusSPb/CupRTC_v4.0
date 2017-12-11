@@ -1,6 +1,6 @@
 
-#n#n/* StartAdminLaunchTask function */
-void StartAdminLaunchTask(void const * argument)
+#n#n/* StartButtonTask function */
+void StartButtonTask(void const * argument)
 {
 
 #n

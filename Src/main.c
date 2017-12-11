@@ -86,13 +86,11 @@ DMA_HandleTypeDef hdma_tim3_ch1_trig;
 
 UART_HandleTypeDef huart2;
 
-osThreadId AdminLaunchHandle;
 osThreadId ButtonHandle;
-osThreadId USARTHandle;
-osThreadId LCDHandle;
 osThreadId LEDmatrixHandle;
 osThreadId AudioMessageHandle;
 osThreadId RGBws2812bHandle;
+osThreadId USARTHandle;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -100,11 +98,7 @@ osThreadId RGBws2812bHandle;
 /*--------------------------------STATUS--------------------------------------*/
 /*----------------------------------------------------------------------------*/
 // Здесь хранится состояние кнопки
-uint8_t buttonStatus;
-// Переменная, сообщающая в каком режиме следует работать кубку(Демо-режим или обычный)
-uint8_t demoModeStatus;
-// Переменная, сообщающая включен ли у нас режим обновления
-uint8_t updateModeStatus;
+uint8_t playSound = 0;
 
 /*----------------------------------------------------------------------------*/
 /*--------------------------------SPEEX---------------------------------------*/
@@ -133,18 +127,6 @@ uint16_t allDataSize;
 uint8_t pageNum = 0;
 // Сообщает нам о том, была ли уже очищена первая страница
 uint8_t firstErase = 0;
-// Здесь храниться информация о занятом месте
-uint32_t state;
-//Здесь храниться размер Текста №1
-uint32_t sizeText1;
-// Здесь храниться Текст №1
-uint8_t textMessage1[40];
-// Здесь храниться размер Текста №2
-uint32_t sizeText2;
-// Здесь храниться Текст №2
-uint8_t textMessage2[40];
-// Здесь храниться размер аудиофайла в фреймах (блоки по 20 байт)
-uint32_t sizeSpeex;
 
 #ifdef LCD_ON
 // Массив, хранящий кодировку для кириллицы
@@ -155,9 +137,11 @@ uint8_t rusText[66];
 uint8_t LED_BYTE_Buffer[QUANTITY_OF_LED*24 + TRAILING_BYTES];
 #endif
 
+// Режим работы кубка. 0-нормальная работа, 1-демо режим, 2-режим обновления
+uint8_t systemMode;
 
-uint32_t formalSizeText1;
-uint32_t formalSizeText2;
+// Массив, хранящий принимаемые данные до парсинга
+uint8_t dataBuffer[60];
 
 /* USER CODE END PV */
 
@@ -170,13 +154,11 @@ static void MX_TIM3_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM6_Init(void);
-void StartAdminLaunchTask(void const * argument);
 void StartButtonTask(void const * argument);
-void StartUSARTTask(void const * argument);
-void StartLCDTask(void const * argument);
 void StartLEDmatrixTask(void const * argument);
 void StartAudioMessageTask(void const * argument);
 void StartRGBws2812bTask(void const * argument);
+void StartUSARTTask(void const * argument);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
@@ -203,13 +185,8 @@ void SpeexInit(void);
  *
  * Запись данных во flash память
  */
-AnswerStatus SU_FLASH_Save_User_Data(speex_data parsData, uint8_t numReceivedByts);
+AnswerStatus SU_FLASH_Save_User_Data(RecData parsData, uint8_t numReceivedBytes);
 
-/* @brief Brief of ReadMemory
- *
- * Функция чтения записанных данных из памяти
- */
-//void ReadMemory(void);
 
 /* @brief Brief of AntiContactBounce
  *
@@ -254,6 +231,9 @@ EXIT DrawTS(uint8_t* array, int symbol, uint8_t speed);
  * Функция отвечает за комплексную анимацию LED-матрицы 8х8, включая скроллинг,
  * различные движения и т.д.
  */
+
+void WriteToFlash(uint32_t writeAddress, uint32_t sizeData, uint8_t *data);
+
 EXIT DrawAll(uint8_t state);
 #endif
 /* USER CODE END PFP */
@@ -308,8 +288,22 @@ int main(void)
 #ifdef AUDIO_ON
 	SpeexInit();
 #endif
-
-	//Проверяем режим работы
+	// Определяем режим работы
+	// Если кнопка нажата, то включаем режим обновленяи
+	if(!HAL_GPIO_ReadPin(BUTTON_GPIO_PORT, BUTTON_GPIO_PIN))
+	{
+		HAL_Delay(3000);
+		while(!HAL_GPIO_ReadPin(BUTTON_GPIO_PORT, BUTTON_GPIO_PIN)) HAL_Delay(100);
+		systemMode = SYSTEM_MODE_UPDATE;
+	}
+	//	 Если кубок не прошит, то запускаем демо режим
+	else if((*(uint32_t*)START_FLASH_PAGE == 0xFFFFFFFF) || (*(uint32_t*)START_FLASH_PAGE == 0))
+	{
+		systemMode = SYSTEM_MODE_DEMO;
+	}
+	// В противном случае включаем нормальный режим работы
+	else
+		systemMode = SYSTEM_MODE_NORMAL;
 
 	/* USER CODE END 2 */
 
@@ -326,37 +320,37 @@ int main(void)
 	/* USER CODE END RTOS_TIMERS */
 
 	/* Create the thread(s) */
-	/* definition and creation of AdminLaunch */
-
-	osThreadDef(AdminLaunch, StartAdminLaunchTask, osPriorityNormal, 0, 256);
-	AdminLaunchHandle = osThreadCreate(osThread(AdminLaunch), NULL);
-
-	/* definition and creation of Button */
-	osThreadDef(Button, StartButtonTask, osPriorityIdle, 0, 256);
-	ButtonHandle = osThreadCreate(osThread(Button), NULL);
-
-	/* definition and creation of USART */
-	osThreadDef(USART, StartUSARTTask, osPriorityIdle, 0, 256);
-	USARTHandle = osThreadCreate(osThread(USART), NULL);
-
-	/* definition and creation of LCD */
-	osThreadDef(LCD, StartLCDTask, osPriorityIdle, 0, 256);
-	LCDHandle = osThreadCreate(osThread(LCD), NULL);
-
-	/* definition and creation of LEDmatrix */
-	osThreadDef(LEDmatrix, StartLEDmatrixTask, osPriorityIdle, 0, 256);
-	LEDmatrixHandle = osThreadCreate(osThread(LEDmatrix), NULL);
-
-	/* definition and creation of AudioMessage */
-	osThreadDef(AudioMessage, StartAudioMessageTask, osPriorityIdle, 0, 256);
-	AudioMessageHandle = osThreadCreate(osThread(AudioMessage), NULL);
-
-	/* definition and creation of RGBws2812b */
-	osThreadDef(RGBws2812b, StartRGBws2812bTask, osPriorityIdle, 0, 256);
-	RGBws2812bHandle = osThreadCreate(osThread(RGBws2812b), NULL);
 
 	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
+	/* definition and creation of Button */
+	if(systemMode == SYSTEM_MODE_UPDATE)
+	{
+		/* definition and creation of USART */
+		osThreadDef(USART, StartUSARTTask, osPriorityIdle, 0, 256);
+		USARTHandle = osThreadCreate(osThread(USART), NULL);
+	}
+	else
+	{
+		osThreadDef(Button, StartButtonTask, osPriorityIdle, 0, 256);
+		ButtonHandle = osThreadCreate(osThread(Button), NULL);
+
+#ifdef	LED_ON
+		/* definition and creation of LEDmatrix */
+		osThreadDef(LEDmatrix, StartLEDmatrixTask, osPriorityIdle, 0, 256);
+		LEDmatrixHandle = osThreadCreate(osThread(LEDmatrix), NULL);
+#endif
+#ifdef	AUDIO_ON
+		/* definition and creation of AudioMessage */
+		osThreadDef(AudioMessage, StartAudioMessageTask, osPriorityIdle, 0, 256);
+		AudioMessageHandle = osThreadCreate(osThread(AudioMessage), NULL);
+#endif
+#ifdef	WS2812B_ON
+		/* definition and creation of RGBws2812b */
+		osThreadDef(RGBws2812b, StartRGBws2812bTask, osPriorityIdle, 0, 256);
+		RGBws2812bHandle = osThreadCreate(osThread(RGBws2812b), NULL);
+#endif
+	}
 	/* USER CODE END RTOS_THREADS */
 
 	/* USER CODE BEGIN RTOS_QUEUES */
@@ -371,6 +365,7 @@ int main(void)
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
+
 	while (1)
 	{
 		/* USER CODE END WHILE */
@@ -572,10 +567,10 @@ static void MX_USART2_UART_Init(void)
 
 }
 
-/** 
+/**
  * Enable DMA controller clock
  */
-static void MX_DMA_Init(void) 
+static void MX_DMA_Init(void)
 {
 	/* DMA controller clock enable */
 	__HAL_RCC_DMA1_CLK_ENABLE();
@@ -587,7 +582,7 @@ static void MX_DMA_Init(void)
 
 }
 
-/** Configure pins as 
+/** Configure pins as
  * Analog
  * Input
  * Output
@@ -1038,7 +1033,7 @@ void PlayMessage(unsigned char const *array, uint16_t frame_number)
 /*--------------------------------FLASH---------------------------------------*/
 /*----------------------------------------------------------------------------*/
 // Функция записи в флеш-память
-AnswerStatus SU_FLASH_Save_User_Data(speex_data parsData, uint8_t numReceivedByts)
+AnswerStatus SU_FLASH_Save_User_Data(RecData parsData, uint8_t numReceivedBytes)
 {
 	// Размер принятого сообщения
 	uint8_t messageSize = 0;
@@ -1064,26 +1059,11 @@ AnswerStatus SU_FLASH_Save_User_Data(speex_data parsData, uint8_t numReceivedByt
 	case 2:
 	case 3:
 		addressSrc = (uint32_t*)&parsData.data;
-
-		// Заменяем два байта кириллицы одним
-		//ConvertRus(dataBufferPars.data, messageSize);
-
 		// Вычитаем 15 из общего числа полученных байт, так как это не сами данные
 		// ,а лишь информация о роде данных.
-		messageSize = numReceivedByts - 15;
+		messageSize = numReceivedBytes - 15;
 		multipleMessageSize = messageSize;
-		// Если размер сообщения не кратен 4, то прибавляем до кратности
-		// и обнуляем элемент массива под номером messageSize,
-		// так как в нём лежат старые данные
-		if((messageSize % 4) != 0)
-		{
-			while((messageSize % 4) != 0)
-			{
-				parsData.data[messageSize] = 0;
-				messageSize++;
-			}
-		}
-		allDataSize += messageSize;
+		allDataSize += 80;
 		// Прибавляем 4, так как нужно учесть количество символов
 		// ,которое храниться в памяти в 4 байтах
 		allDataSize += 4;
@@ -1134,41 +1114,48 @@ AnswerStatus SU_FLASH_Save_User_Data(speex_data parsData, uint8_t numReceivedByt
 			// который мы записали туда в ходе чистки страницы памяти
 			CLEAR_BIT(FLASH->CR, (FLASH_CR_PER));
 		}
-
-	if(parsData.command == 2 || parsData.command == 3)
+	switch (parsData.command)
 	{
-		// Записываем в память количество байт в тексте
-		if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD , addressDes, multipleMessageSize) != HAL_OK)
-		{
-			// Закрываем флеш в случае неудачной записи
-			HAL_FLASH_Lock();
-			return ERRORA;
-		}
-		addressDes += 4;
+	case STATE:
+		convert |= parsData.data[0];
+		HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, START_FLASH_PAGE, convert);
+		break;
+	case TEXT1:
+		WriteToFlash(SIZE_TEXT1_address, SIZE_TEXT1_MEMORY_SIZE, (uint8_t*)&multipleMessageSize);
+		WriteToFlash(TEXT1_address, (uint32_t)multipleMessageSize, parsData.data);
+		break;
+	case TEXT2:
+		WriteToFlash(SIZE_TEXT2_address, SIZE_TEXT2_MEMORY_SIZE, (uint8_t*)&multipleMessageSize);
+		WriteToFlash(TEXT2_address, (uint32_t)multipleMessageSize, parsData.data);
+		break;
+	case BLOCK:
+		convert |= parsData.blockNumber;
+		HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, BLOCK_address, convert);
+		break;
+	case SPEEX:
+		WriteToFlash(SPEEX_address + parsData.blockNumber*20, 20, parsData.data);
+		break;
 	}
+	HAL_FLASH_Lock();
+	return Flash_OK;
+}
+
+void WriteToFlash(uint32_t* writeAddress, uint32_t sizeData, uint8_t *data)
+{
 	// Записываем по 4 байта данные из буфера
-	for(uint8_t i = 0; i<messageSize; i+=4)
+	for(uint8_t i = 0; i < sizeData; i+=4)
 	{
-		if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD , addressDes, *addressSrc) == HAL_OK)
+		if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, writeAddress, *(uint32_t*)(data)) == HAL_OK)
 		{
-			addressDes+=4;
-			addressSrc++;
+			writeAddress ++;
+			data += 4;
 		}
 		// Закрываем флеш в случае неудачной записи
 		else
 		{
 			HAL_FLASH_Lock();
-			return ERRORB;
 		}
 	}
-	// Очищаем бит PER в регистре FLASH->CR,
-	// которые мы записали туда в ходе чистки страницы памяти
-	CLEAR_BIT(FLASH->CR, (FLASH_CR_PER));
-	if(HAL_FLASH_Lock() != HAL_OK)
-	{
-		return ERRORC;
-	}
-	return Flash_OK;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1622,47 +1609,47 @@ void WS2812_send_group(uint8_t redLED1, uint8_t greenLED1, uint8_t blueLED1,
 	}
 
 	while (numLedOfGroup[3])
+	{
+		for (j = 0; j < 8; j++)									// GREEN data
 		{
-			for (j = 0; j < 8; j++)									// GREEN data
+			if ( (greenLED4<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
 			{
-				if ( (greenLED4<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
-				{
-					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
-				}
-				else
-				{
-					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
-				}
-				memaddr++;
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
 			}
-
-			for (j = 0; j < 8; j++)									// RED data
+			else
 			{
-				if ( (redLED4<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
-				{
-					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
-				}
-				else
-				{
-					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
-				}
-				memaddr++;
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
 			}
-
-			for (j = 0; j < 8; j++)									// BLUE data
-			{
-				if ( (blueLED4<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
-				{
-					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
-				}
-				else
-				{
-					LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
-				}
-				memaddr++;
-			}
-			numLedOfGroup[3]--;
+			memaddr++;
 		}
+
+		for (j = 0; j < 8; j++)									// RED data
+		{
+			if ( (redLED4<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+			}
+			else
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+			}
+			memaddr++;
+		}
+
+		for (j = 0; j < 8; j++)									// BLUE data
+		{
+			if ( (blueLED4<<j) & 0x80 )							// data sent MSB first, j = 0 is MSB j = 7 is LSB
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_HIGH; 	// compare value for logical 1
+			}
+			else
+			{
+				LED_BYTE_Buffer[memaddr] = PWM_FOR_RGB_LOW;		// compare value for logical 0
+			}
+			memaddr++;
+		}
+		numLedOfGroup[3]--;
+	}
 	// add needed delay at end of byte cycle, pulsewidth = 0
 	while(memaddr < buffersize)
 	{
@@ -1690,106 +1677,33 @@ GPIO_PinState AntiContactBounce(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 	}
 	return GPIO_PIN_RESET;
 }
+
 /* USER CODE END 4 */
-
-/* StartAdminLaunchTask function */
-void StartAdminLaunchTask(void const * argument)
-{
-
-	/* USER CODE BEGIN 5 */
-	/* Infinite loop */
-	// Отправляем все остальные задачи спать, так как пока что-то делать не требуется
-#ifdef AUDIO_ON
-	vTaskSuspend(AudioMessageHandle);
-#endif
-
-#ifdef LCD_ON
-	vTaskSuspend(LCDHandle);
-#endif
-
-#ifdef WS2812B_ON
-	//vTaskSuspend(WS2812_RGBHandle);
-#endif
-	vTaskSuspend(USARTHandle);
-
-#ifdef LED_MATRIX_ON
-	vTaskSuspend(LEDmatrixHandle);
-#endif
-
-	formalSizeText1 = 0;
-	formalSizeText2 = 0;
-
-	for(;;)
-	{
-		// Проверяем не нажата ли кнопка
-		if(!HAL_GPIO_ReadPin(BUTTON_GPIO_PORT, BUTTON_GPIO_PIN))
-		{
-			// Включаем режим обновления
-			updateModeStatus = 1;
-		}
-		else
-		{
-			// Читаем из flash памяти информацию о
-			// занятом месте
-			memcpy(&state, (void *)START_FLASH_PAGE, 4);
-			// Если кубок не прошит, то запускаем демо режим
-			if((state == 0xFFFFFFFF)||(state == 0))
-			{
-				demoModeStatus = 1;
-			}
-			else
-			{
-				//Читаем из flash памяти информацию о...
-				//размере первого текстового сообщения
-				memcpy(&sizeText1, (void *)SIZE_TEXT1_address, 4);
-
-				//содержании первого текстового сообщения
-				memcpy(textMessage1, (void *)TEXT1_address, sizeText1);
-				formalSizeText1 = sizeText1;
-
-				while(formalSizeText1 % 4 != 0)
-				{
-					formalSizeText1++;
-				}
-				//размере второго текстового сообщения
-				memcpy(&sizeText2, (void *)SIZE_TEXT2_address, 4);
-				//содержании второго текстового сообщения
-				memcpy(textMessage2, (void *)TEXT2_address, sizeText2);
-				formalSizeText2 = sizeText2;
-				while(formalSizeText2 % 4 !=0)
-				{
-					formalSizeText2++;
-				}
-				//размере аудиофайла (в фреймах по 20 байт)
-				memcpy(&sizeSpeex, (void *)BLOCK_address, 4);
-				// Удаляем задачу из списка задач
-				vTaskDelete(NULL);
-			}
-		}
-		// Отправляем задачу спать
-		vTaskSuspend(NULL);
-	}
-	/* USER CODE END 5 */
-}
 
 /* StartButtonTask function */
 void StartButtonTask(void const * argument)
 {
-	/* USER CODE BEGIN StartButtonTask */
-	/* Infinite loop */
-	uint8_t pressTime; // Создаем счётчик для фиксации времени нажатия кнопки
 
-	// Будим задачи
-#ifdef WS2812B_ON
-	// vTaskResume(WS2812_RGBHandle);
-#endif
+	/* USER CODE BEGIN 5 */
+	/* Infinite loop */
+	// Создаем счётчик для фиксации времени нажатия кнопки
+	uint8_t pressTime;
 
 #ifdef LCD_ON
-	vTaskResume(LCDHandle);
-#endif
-
-#ifdef LED_MATRIX_ON
-	vTaskResume(LEDmatrixHandle);
+	// Чистим экран
+	TM_HD44780_Clear();
+	// Если включен демо-режим, то показываем демо-сообщение,
+	// если нет, то выводим текст, записанный в память
+	if(systemMode)
+	{
+		TM_HD44780_Puts(0, 0, DEMO_TEXT_1, LEN_DEMO_TEXT_1);
+		TM_HD44780_Puts(0, 1, DEMO_TEXT_2, LEN_DEMO_TEXT_2);
+	}
+	else
+	{
+		TM_HD44780_Puts(0, 0, (void *)TEXT2_address, *(uint32_t*)SIZE_TEXT2_address);
+		TM_HD44780_Puts(0, 1, (void *)TEXT1_address, *(uint32_t*)SIZE_TEXT1_address);
+	}
 #endif
 
 	for(;;)
@@ -1808,222 +1722,18 @@ void StartButtonTask(void const * argument)
 			// и зависай в цикле
 			if((pressTime <= 30)&&(pressTime >= 1))
 			{
+				playSound = 1;
+				osDelay(1000);
 #ifdef AUDIO_ON
 				vTaskResume(AudioMessageHandle);
 #endif
 				// Обнуляем счётчик нажатия кнопки
 				pressTime = 0;
 			}
-			// Если кнопка была зажата с момента включения,
-			// то включай режим обновления и зависай в цикле
-			if((pressTime >= 30)&&(updateModeStatus))
-			{
-				// Отправляем все остальные задачи спать, так как пока что-то делать не требуется
-#ifdef AUDIO_ON
-				vTaskSuspend(AudioMessageHandle);
-#endif
-
-#ifdef LCD_ON
-				vTaskSuspend(LCDHandle);
-#endif
-
-#ifdef WS2812B_ON
-				vTaskSuspend(RGBws2812bHandle);
-#endif
-
-#ifdef LED_MATRIX_ON
-				vTaskSuspend(LEDmatrixHandle);
-#endif
-				// Запускаем задачу USART
-				vTaskResume(USARTHandle);
-				// Отправляем текущую задачу спать
-				vTaskSuspend(NULL);
-			}
 		}
-		osDelay(1);
+		osDelay(100);
 	}
-	/* USER CODE END StartButtonTask */
-}
-
-/* StartUSARTTask function */
-void StartUSARTTask(void const * argument)
-{
-	/* USER CODE BEGIN StartUSARTTask */
-	/* Infinite loop */
-	// Счетчик, показывающий сколько мы уже приняли байт в "data_buffer"
-	uint8_t numBuff;
-
-	// Ответ о состоянии принятого сообщения
-	uint8_t answer;
-
-	// Здесь будут храниться данные после парсинга
-	speex_data dataBufferPars;
-
-	// Массив, хранящий принимаемые данные до парсинга
-	uint8_t dataBuffer[SIZE_BUFF];
-
-	uint8_t *ptrBuff;
-
-#ifdef LCD_ON
-	uint8_t updateLine;
-#endif
-
-	for(;;)
-	{
-		// Проверяем, включен ли режим обновления
-		if(updateModeStatus)
-		{
-			TM_HD44780_Puts(0, 0, UPDATE_TEXT, LEN_UPDATE_TEXT);
-
-			// Крутимся в цикле пока не закончится обновление
-			// Обнуляем счётчик полученных данных
-			allDataSize = 0;
-
-#ifdef LCD_ON
-			// Чистим экран
-			TM_HD44780_Clear();
-			updateLine = 0;
-#endif
-
-			// Сообщаем, что мы готовы к получению первого блока данных
-			answer = 's';
-			HAL_UART_Transmit(&huart2, (uint8_t*)&answer, 1, 0xFFFF);
-			while(1)
-			{
-				// Крутимся в цикле пока не встретим символ окончания сообщения
-				// или пока не будет переполнения буфера данных "data_buffer",
-				// или пока не перестанут приходить данные
-
-				// Присваеваем указателю адрес начала буфера
-				ptrBuff = dataBuffer;
-				// Обнуляем счётчик байтов в буфере "data_buffer"
-				numBuff = 0;
-				// По умолчанию ответное сообщение означает успешную передачу
-				answer = 'g';
-				// Принимаем данные по байту и забрасываем в наш буфер
-				while(numBuff < SIZE_BUFF)
-				{
-					// Приём
-					HAL_UART_Receive(&huart2, ptrBuff, 1, 0xFFFF);
-					// Увеличиваем счётчик принятых байтов
-					numBuff++;
-					// Если встретили символ окончания сообщения, то выходим из цикла
-					if(*ptrBuff == '>')
-						break;
-					// Двигаем указатель на следующий элемент массива
-					ptrBuff++;
-				}
-				// Если переданный пакет байтов состоит лишь из <0>, то это означает конец
-				// передачи. Выходим из цикла приёма пакетов
-				if((*ptrBuff == '>')&&(*(ptrBuff-1) == '0')&&(*(ptrBuff-2) == '<'))
-				{
-					break;
-				}
-				// Парсим полученные данные
-				dataBufferPars = parsing((char*)dataBuffer, numBuff);
-
-#ifdef LCD_ON
-				// Полоска закрузки на LCD
-				// Если полоска достигла окончания строки дисплея, то...
-				if(!((updateLine + 1) % 17))
-				{
-					// Чистим экран
-					TM_HD44780_Clear();
-					// Обнуляем счётчик полоски
-					updateLine = 0;
-					// Выводим сообщение об обновлении, так как оно стёрлось
-					TM_HD44780_Puts(0, 0, UPDATE_TEXT, LEN_UPDATE_TEXT);
-				}
-				// Выводим элемент полоски загрузки на LCD
-				TM_HD44780_PutCustom(updateLine, 1, 255);
-				// Увеличиваем счётчик полоски загрузки
-				updateLine++;
-#endif
-
-				// Если не возникло ошибок при парсинге, то сохраняем
-				// полученные данные в памяти МК
-				if(dataBufferPars.command != 6)
-				{
-					// Сохраняем данные в памяти
-					answer = SU_FLASH_Save_User_Data(dataBufferPars, numBuff);
-				}
-				else
-				{
-					// Если возникли проблемы при записи, то переменной,
-					// в которой хранится ответ приложению, присваеваем
-					// символ ошибки
-					answer = 'f';
-				}
-				// Отправляем результат работы
-				HAL_UART_Transmit(&huart2, (uint8_t*)&answer, 1, 0xFFFF);
-			}
-
-			// Будим все остальные задачи
-			vTaskResume(AdminLaunchHandle);
-
-			vTaskResume(ButtonHandle);
-
-#ifdef LCD_ON
-			vTaskResume(LCDHandle);
-#endif
-
-#ifdef AUDIO_ON
-			vTaskResume(AudioMessageHandle);
-#endif
-
-#ifdef LED_MATRIX_ON
-			vTaskResume(LEDmatrixHandle);
-#endif
-
-#ifdef WS2812B_ON
-			//vTaskResume(RGBws2812bHandle);
-#endif
-			// Удаляем эту задачу
-			vTaskDelete(NULL);
-		}
-		osDelay(1);
-	}
-	/* USER CODE END StartUSARTTask */
-}
-
-/* StartLCDTask function */
-void StartLCDTask(void const * argument)
-{
-	/* USER CODE BEGIN StartLCDTask */
-#ifndef LCD_ON
-	vTaskDelete(NULL);
-#endif
-	/* Infinite loop */
-	for(;;)
-	{
-#ifdef LCD_ON
-		// Чистим экран
-		TM_HD44780_Clear();
-		osDelay(3000);
-		// Если включен демо-режим, то показываем демо-сообщение,
-		// если нет, то выводим текст, записанный в память
-//		for(uint8_t step; step < 255; step++)
-//		{
-//			TM_HD44780_PutCustom(0, 0, step);
-//			osDelay(100);
-//			TM_HD44780_Clear();
-//		}
-		if(demoModeStatus)
-		{
-			TM_HD44780_Puts(0, 0, DEMO_TEXT_1, LEN_DEMO_TEXT_1);
-			TM_HD44780_Puts(0, 1, DEMO_TEXT_2, LEN_DEMO_TEXT_2);
-		}
-		else
-		{
-			TM_HD44780_Puts(0, 0, (void *)TEXT2_address, *(uint32_t*)SIZE_TEXT2_address);
-			TM_HD44780_Puts(0, 1, (void *)TEXT1_address, *(uint32_t*)SIZE_TEXT1_address);
-
-		}
-		// Отправляем задачу спать
-		vTaskSuspend(NULL);
-#endif
-	}
-	/* USER CODE END StartLCDTask */
+	/* USER CODE END 5 */
 }
 
 /* StartLEDmatrixTask function */
@@ -2092,10 +1802,9 @@ void StartAudioMessageTask(void const * argument)
 	/* Infinite loop */
 	for(;;)
 	{
+		if(!playSound)
+			vTaskSuspend(NULL);
 #ifdef AUDIO_ON
-		vTaskSuspend(RGBws2812bHandle);
-		WS2812_send_group(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-		WS2812_send_group(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 		// Включаем прерывания по таймеру
 		HAL_TIM_Base_Start_IT(&htim6);
@@ -2103,18 +1812,17 @@ void StartAudioMessageTask(void const * argument)
 		HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
 
 		// Если включен демо-режим, то включаем демо-запись
-		if(demoModeStatus) PlayMessage(&spx_voice2[0], spx_frames2);
+		if(systemMode) PlayMessage(&spx_voice2[0], spx_frames2);
 		// В противном случае проигрываем то, что мы записали в память
-		else PlayMessage((void*)SPEEX_address, sizeSpeex);
+		else PlayMessage((void*)SPEEX_address, *(uint32_t*)BLOCK_address);
 
 		// Выключаем прерывания по таймеру
 		HAL_TIM_Base_Stop_IT(&htim6);
 		// Выключаем ЦАП
 		HAL_DAC_Stop(&hdac, DAC_CHANNEL_1);
+		//vTaskResume(RGBws2812bHandle);
 
-		vTaskResume(RGBws2812bHandle);
-		// Отправляем текущую задачу спать
-		vTaskSuspend(NULL);
+		playSound = 0;
 #endif
 		osDelay(1);
 	}
@@ -2142,17 +1850,26 @@ void StartRGBws2812bTask(void const * argument)
 		//			WS2812_send_group_short(rainbow[i][0], QUANTITY_OF_GROUPS);
 		//			osDelay(1000);
 		//		}
-//		WS2812_send_group(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-//		WS2812_send_group(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		//		WS2812_send_group(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		//		WS2812_send_group(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		for (uint16_t i = 0; i+50 < 765; i++)
 		{
-			WS2812_send_group(eightbit[i][0], eightbit[i][1], eightbit[i][2],
-					eightbit[i+50][0], eightbit[i+50][1], eightbit[i+50][2],
-					eightbit[i][0], eightbit[i][1], eightbit[i][2],
-					eightbit[i+50][0], eightbit[i+50][1], eightbit[i+50][2]);
-			osDelay(1000);
+			if(playSound)
+			{
+				WS2812_send_group(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+				while(playSound)
+					osDelay(100);
+			}
+			else
+			{
+				WS2812_send_group(eightbit[i][0], eightbit[i][1], eightbit[i][2],
+						eightbit[i+50][0], eightbit[i+50][1], eightbit[i+50][2],
+						eightbit[i][0], eightbit[i][1], eightbit[i][2],
+						eightbit[i+50][0], eightbit[i+50][1], eightbit[i+50][2]);
+				osDelay(1000);
+			}
+			//if(buttonStatus) vTaskSuspen(RGBws2812bHandle);
 		}
-
 		//			for (uint16_t i = 0; i < 766; i += 1)
 		//			{
 		//				WS2812_send_noPTR(eightbit[i][0], eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);//eightbit[i][1], eightbit[i][2], QUANTITY_OF_LED);
@@ -2166,9 +1883,115 @@ void StartRGBws2812bTask(void const * argument)
 		//		}
 		//osDelay(2500);
 #endif
-		osDelay(1);
+		osDelay(100);
 	}
 	/* USER CODE END StartRGBws2812bTask */
+}
+
+/* StartUSARTTask function */
+void StartUSARTTask(void const * argument)
+{
+	/* USER CODE BEGIN StartUSARTTask */
+	/* Infinite loop */
+	// Счетчик, показывающий сколько мы уже приняли байт в "data_buffer"
+	uint8_t numBuff;
+
+	// Ответ о состоянии принятого сообщения
+	uint8_t answer;
+
+	// Здесь будут храниться данные после парсинга
+	RecData dataBufferPars;
+
+	uint8_t *ptrBuff;
+
+#ifdef LCD_ON
+	uint8_t updateLine;
+	// Чистим экран
+	TM_HD44780_Clear();
+	updateLine = 0;
+#endif
+
+	for(;;)
+	{
+		// Крутимся в цикле пока не закончится обновление
+		// Обнуляем счётчик полученных данных
+		allDataSize = 0;
+		// Сообщаем, что мы готовы к получению первого блока данных
+		answer = 's';
+		HAL_UART_Transmit(&huart2, (uint8_t*)&answer, 1, 0xFFFF);
+		while(1)
+		{
+			// Крутимся в цикле пока не встретим символ окончания сообщения
+			// или пока не будет переполнения буфера данных "data_buffer",
+			// или пока не перестанут приходить данные
+
+			// Присваеваем указателю адрес начала буфера
+			ptrBuff = dataBuffer;
+			// Обнуляем счётчик байтов в буфере "data_buffer"
+			numBuff = 0;
+			// По умолчанию ответное сообщение означает успешную передачу
+			answer = 'g';
+			// Принимаем данные по байту и забрасываем в наш буфер
+			while(numBuff < SIZE_BUFF)
+			{
+				// Приём
+				HAL_UART_Receive(&huart2, ptrBuff, 1, 0xFFFF);
+				// Увеличиваем счётчик принятых байтов
+				numBuff++;
+				// Если встретили символ окончания сообщения, то выходим из цикла
+				if(*ptrBuff == '>')
+					break;
+				// Двигаем указатель на следующий элемент массива
+				ptrBuff++;
+			}
+			// Если переданный пакет байтов состоит лишь из <0>, то это означает конец
+			// передачи. Выходим из цикла приёма пакетов
+			if((*ptrBuff == '>')&&(*(ptrBuff-1) == '0')&&(*(ptrBuff-2) == '<'))
+			{
+				break;
+			}
+			// Парсим полученные данные
+			dataBufferPars = parsing((char*)dataBuffer, numBuff);
+
+#ifdef LCD_ON
+			// Полоска закрузки на LCD
+			// Если полоска достигла окончания строки дисплея, то...
+			if(!((updateLine + 1) % 17))
+			{
+				// Чистим экран
+				TM_HD44780_Clear();
+				// Обнуляем счётчик полоски
+				updateLine = 0;
+				// Выводим сообщение об обновлении, так как оно стёрлось
+				TM_HD44780_Puts(0, 0, UPDATE_TEXT, LEN_UPDATE_TEXT);
+			}
+			// Выводим элемент полоски загрузки на LCD
+			TM_HD44780_PutCustom(updateLine, 1, 255);
+			// Увеличиваем счётчик полоски загрузки
+			updateLine++;
+#endif
+
+			// Если не возникло ошибок при парсинге, то сохраняем
+			// полученные данные в памяти МК
+			if(dataBufferPars.command != 6)
+			{
+				// Сохраняем данные в памяти
+				answer = SU_FLASH_Save_User_Data(dataBufferPars, numBuff);
+			}
+			else
+			{
+				// Если возникли проблемы при записи, то переменной,
+				// в которой хранится ответ приложению, присваеваем
+				// символ ошибки
+				answer = 'f';
+			}
+			// Отправляем результат работы
+			HAL_UART_Transmit(&huart2, (uint8_t*)&answer, 1, 0xFFFF);
+		}
+		osDelay(100);
+		vTaskDelete(NULL);
+	}
+	/* USER CODE END StartUSARTTask */
 }
 
 /**

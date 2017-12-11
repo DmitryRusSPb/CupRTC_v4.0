@@ -66,10 +66,14 @@
 
 /* USER CODE BEGIN Private defines */
 
+#define SYSTEM_MODE_NORMAL		0
+#define SYSTEM_MODE_DEMO		1
+#define SYSTEM_MODE_UPDATE		2
+
 /*----------------------------------------------------------------------------*/
 /*--------------------------------FLASH---------------------------------------*/
 /*----------------------------------------------------------------------------*/
-// Значение, которое должно быть в месте записи занятого места, чтобы включился
+/*// Значение, которое должно быть в месте записи занятого места, чтобы включился
 // демо-режим
 #define MEM_STATUS 				(state == 0xFFFFFFFF)
 // Адрес начальной страницы в памяти, а также
@@ -87,6 +91,33 @@
 #define BLOCK_address          	(START_FLASH_PAGE + 0x0000000C + formalSizeText1 + formalSizeText2)
 // Адрес места в памяти для хранения аудиофайла
 #define SPEEX_address          	(START_FLASH_PAGE + 0x00000010 + formalSizeText1 + formalSizeText2)
+*/
+// Значение, которое должно быть в месте записи занятого места, чтобы включился
+// демо-режим
+#define MEM_STATUS 				(state == 0xFFFFFFFF)
+// Адрес начальной страницы в памяти, а также
+// адрес места в памяти для хранения занятого на соревнованиях места
+#define START_FLASH_PAGE       	0x801A000
+// Адрес места в памяти для хранения размера Text1
+#define SIZE_TEXT1_address     	0x801A004
+// Адрес места в памяти для хранения Text1
+#define TEXT1_address          	0x801A008
+// Адрес места в памяти для хранения размера Text2
+#define SIZE_TEXT2_address     	0x801A058
+// Адрес места в памяти для хранения Text2
+#define TEXT2_address          	0x801A05C
+// Адрес места в памяти для хранения количества фреймов(для аудиофайла)
+#define BLOCK_address          	0x801A0AC
+// Адрес места в памяти для хранения аудиофайла
+#define SPEEX_address          	0x801A0B0
+
+#define STATE_MEMORY_SIZE		4
+#define SIZE_TEXT1_MEMORY_SIZE	4
+#define TEXT1_MEMORY_SIZE		80
+#define SIZE_TEXT2_MEMORY_SIZE	4
+#define TEXT2_MEMORY_SIZE		80
+#define BLOCK_MEMORY_SIZE		4
+
 // Если мы получил текст, место или кол-во фреймов(speex), то занимаем 16 байт
 #define TEXTSIZE               	16
 // Если мы получили speex данные, то прибавляем размер speex пакета

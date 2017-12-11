@@ -11,21 +11,9 @@
 #t/* start timers, add new ones, ... */
 #t/* USER CODE END RTOS_TIMERS */
 #n#t/* Create the thread(s) */
-#t/* definition and creation of AdminLaunch */
-#tosThreadDef(AdminLaunch, StartAdminLaunchTask, osPriorityIdle, 0, 256);
-#tAdminLaunchHandle = osThreadCreate(osThread(AdminLaunch), NULL);
-#n
 #t/* definition and creation of Button */
 #tosThreadDef(Button, StartButtonTask, osPriorityIdle, 0, 256);
 #tButtonHandle = osThreadCreate(osThread(Button), NULL);
-#n
-#t/* definition and creation of USART */
-#tosThreadDef(USART, StartUSARTTask, osPriorityIdle, 0, 256);
-#tUSARTHandle = osThreadCreate(osThread(USART), NULL);
-#n
-#t/* definition and creation of LCD */
-#tosThreadDef(LCD, StartLCDTask, osPriorityIdle, 0, 256);
-#tLCDHandle = osThreadCreate(osThread(LCD), NULL);
 #n
 #t/* definition and creation of LEDmatrix */
 #tosThreadDef(LEDmatrix, StartLEDmatrixTask, osPriorityIdle, 0, 256);
@@ -38,6 +26,10 @@
 #t/* definition and creation of RGBws2812b */
 #tosThreadDef(RGBws2812b, StartRGBws2812bTask, osPriorityIdle, 0, 256);
 #tRGBws2812bHandle = osThreadCreate(osThread(RGBws2812b), NULL);
+#n
+#t/* definition and creation of USART */
+#tosThreadDef(USART, StartUSARTTask, osPriorityIdle, 0, 256);
+#tUSARTHandle = osThreadCreate(osThread(USART), NULL);
 #n
 #n
 #t/* USER CODE BEGIN RTOS_THREADS */

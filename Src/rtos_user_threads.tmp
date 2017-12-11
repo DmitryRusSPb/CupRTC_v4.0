@@ -1,39 +1,3 @@
-/* StartButtonTask function */
-void StartButtonTask(void const * argument)
-{
-#t/* USER CODE BEGIN StartButtonTask */
-#t/* Infinite loop */
-#tfor(;;)
-#t{
-#t#tosDelay(1);
-#t}
-#t/* USER CODE END StartButtonTask */
-}
-#n
-/* StartUSARTTask function */
-void StartUSARTTask(void const * argument)
-{
-#t/* USER CODE BEGIN StartUSARTTask */
-#t/* Infinite loop */
-#tfor(;;)
-#t{
-#t#tosDelay(1);
-#t}
-#t/* USER CODE END StartUSARTTask */
-}
-#n
-/* StartLCDTask function */
-void StartLCDTask(void const * argument)
-{
-#t/* USER CODE BEGIN StartLCDTask */
-#t/* Infinite loop */
-#tfor(;;)
-#t{
-#t#tosDelay(1);
-#t}
-#t/* USER CODE END StartLCDTask */
-}
-#n
 /* StartLEDmatrixTask function */
 void StartLEDmatrixTask(void const * argument)
 {
@@ -68,5 +32,17 @@ void StartRGBws2812bTask(void const * argument)
 #t#tosDelay(1);
 #t}
 #t/* USER CODE END StartRGBws2812bTask */
+}
+#n
+/* StartUSARTTask function */
+void StartUSARTTask(void const * argument)
+{
+#t/* USER CODE BEGIN StartUSARTTask */
+#t/* Infinite loop */
+#tfor(;;)
+#t{
+#t#tosDelay(1);
+#t}
+#t/* USER CODE END StartUSARTTask */
 }
 #n

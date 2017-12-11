@@ -151,10 +151,10 @@ char command_definer(char *dat){                                                
 }
 
 
-str_speex_data parsing_str_data(char* dat){                     // распарсивание данных сырых данных и заполнение структуры str_speex_data
+str_RecData parsing_str_data(char* dat){                     // распарсивание данных сырых данных и заполнение структуры str_RecData
 	strcpy(buffer, dat+1);
 	char *tempstr = strtok(buffer," ");							// ф-ия strtok при каждом своем вызове возвращает элемент строки разделенный символом, в данном случае пробелом
-	str_speex_data spdata;
+	str_RecData spdata;
 
 	switch(command_definer(tempstr)){							// в зависимости, что вернет command_definer, выполняется какое-то действие
 
@@ -239,8 +239,8 @@ str_speex_data parsing_str_data(char* dat){                     // распар�
 
 
 
-speex_data convert_speex_str_to_data(str_speex_data data_str){
-	speex_data ret;																	// возвращаемая структура
+RecData convert_speex_str_to_data(str_RecData data_str){
+	RecData ret;																	// возвращаемая структура
 
 	switch(data_str.command){
 
@@ -309,10 +309,10 @@ uint16_t calcrc(char *ptr, uint8_t count)   // вычисление хеш-су�
     return (crc);
 }
 
-speex_data parsing(char* data, uint8_t n){												// перевод данных из str_speex_data в speex_data  и проверка хеш-суммы
-	speex_data sp;
+RecData parsing(char* data, uint8_t n){												// перевод данных из str_RecData в RecData  и проверка хеш-суммы
+	RecData sp;
 	if(n<=BUFLEN){
-		str_speex_data data_str = parsing_str_data(data);
+		str_RecData data_str = parsing_str_data(data);
 		uint16_t temp=0;
 		switch(data_str.command){
 
@@ -361,7 +361,7 @@ speex_data parsing(char* data, uint8_t n){												// перевод данн
 }
 
 
-void print(speex_data sp){													// ф-ия для отладки
+void print(RecData sp){													// ф-ия для отладки
 
 	printf("%d\n", sp.command);
 
