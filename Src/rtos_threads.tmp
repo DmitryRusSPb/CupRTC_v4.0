@@ -1,15 +1,15 @@
 
-#n#n/* StartButtonTask function */
-void StartButtonTask(void const * argument)
+#n#n/* StartMainTask function */
+void StartMainTask(void const * argument)
 {
 
 #n
-#t/* USER CODE BEGIN 5 */
+#t/* USER CODE BEGIN StartMainTask */
 #t/* Infinite loop */
 #tfor(;;)
 #t{
 #t#tosDelay(1);
 #t}
-#t/* USER CODE END 5 */ 
+#t/* USER CODE END StartMainTask */
 }
 #n

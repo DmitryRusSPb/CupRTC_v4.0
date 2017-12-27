@@ -14,12 +14,15 @@ RM := rm -rf
 -include Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/subdir.mk
 -include Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/subdir.mk
 -include Middlewares/Third_Party/FreeRTOS/Source/subdir.mk
--include Drivers/uart/subdir.mk
 -include Drivers/STM32F1xx_HAL_Driver/Src/subdir.mk
--include Drivers/STM32F10x_Speex_Lib/libspeex/subdir.mk
--include Drivers/STM32F10x_Speex_Lib/STM32/libspeex/gcc/subdir.mk
--include Drivers/STM32F10x_Speex_Lib/STM32/libspeex/subdir.mk
--include Drivers/LCD\ for\ STM32F103RET/subdir.mk
+-include Drivers/5_Update/subdir.mk
+-include Drivers/4_WS2812B/subdir.mk
+-include Drivers/3_LedMatrix/subdir.mk
+-include Drivers/2_LCD\ for\ STM32F103RET/subdir.mk
+-include Drivers/1_Audio/STM32F10x_Speex_Lib/libspeex/subdir.mk
+-include Drivers/1_Audio/STM32F10x_Speex_Lib/STM32/libspeex/gcc/subdir.mk
+-include Drivers/1_Audio/STM32F10x_Speex_Lib/STM32/libspeex/subdir.mk
+-include Drivers/1_Audio/subdir.mk
 -include subdir.mk
 -include objects.mk
 

@@ -1,5 +1,1 @@
-osThreadId ButtonHandle;
-osThreadId LEDmatrixHandle;
-osThreadId AudioMessageHandle;
-osThreadId RGBws2812bHandle;
-osThreadId USARTHandle;
+osThreadId MainTaskHandle;

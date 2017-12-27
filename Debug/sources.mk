@@ -15,12 +15,15 @@ C_DEPS :=
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
-Drivers/LCD\ for\ STM32F103RET \
-Drivers/STM32F10x_Speex_Lib/STM32/libspeex \
-Drivers/STM32F10x_Speex_Lib/STM32/libspeex/gcc \
-Drivers/STM32F10x_Speex_Lib/libspeex \
+Drivers/1_Audio/STM32F10x_Speex_Lib/STM32/libspeex \
+Drivers/1_Audio/STM32F10x_Speex_Lib/STM32/libspeex/gcc \
+Drivers/1_Audio/STM32F10x_Speex_Lib/libspeex \
+Drivers/1_Audio \
+Drivers/2_LCD\ for\ STM32F103RET \
+Drivers/3_LedMatrix \
+Drivers/4_WS2812B \
+Drivers/5_Update \
 Drivers/STM32F1xx_HAL_Driver/Src \
-Drivers/uart \
 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS \
 Middlewares/Third_Party/FreeRTOS/Source \
 Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3 \

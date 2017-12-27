@@ -1,5 +1,1 @@
-void StartButtonTask(void const * argument);
-void StartLEDmatrixTask(void const * argument);
-void StartAudioMessageTask(void const * argument);
-void StartRGBws2812bTask(void const * argument);
-void StartUSARTTask(void const * argument);
+void StartMainTask(void const * argument);
