@@ -4,8 +4,6 @@
  *  Created on: 21 дек. 2017 г.
  *      Author: root
  */
-#ifdef AUDIO_ENABLE
-
 #include "audio.h"
 
 __IO int16_t outBuffer[2][FRAME_SIZE];
@@ -87,6 +85,4 @@ void PlayMessage(unsigned char const *array, uint16_t frame_number)
 	nbFrames = 0;
 	outBuff = outBuffer[0];
 }
-
-#endif
 

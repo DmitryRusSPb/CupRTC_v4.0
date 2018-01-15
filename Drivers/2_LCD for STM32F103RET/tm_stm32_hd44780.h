@@ -7,7 +7,7 @@
  * @ide     Keil uVision
  * @license MIT
  * @brief   HD44780 LCD driver library for STM32Fxxx
- *	
+ *
 \verbatim
    ----------------------------------------------------------------------
     Copyright (c) 2016 Tilen Majerle
@@ -16,8 +16,8 @@
     obtaining a copy of this software and associated documentation
     files (the "Software"), to deal in the Software without restriction,
     including without limitation the rights to use, copy, modify, merge,
-    publish, distribute, sublicense, and/or sell copies of the Software, 
-    and to permit persons to whom the Software is furnished to do so, 
+    publish, distribute, sublicense, and/or sell copies of the Software,
+    and to permit persons to whom the Software is furnished to do so,
     subject to the following conditions:
 
     The above copyright notice and this permission notice shall be
@@ -28,7 +28,7 @@
     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
     AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
     OTHER DEALINGS IN THE SOFTWARE.
    ----------------------------------------------------------------------
@@ -55,7 +55,7 @@ extern "C" {
  *	It also supports all HD44780 compatible LCD drivers.
  *
  * \par Default pinout
- *	
+ *
 \verbatim
 LCD   STM32Fxxx         DESCRIPTION
 
@@ -75,48 +75,188 @@ D6    PB12              Data 6, can be overwritten in your project's defines.h f
 D7    PB13              Data 7, can be overwritten in your project's defines.h file
 A     +3V3              Back light positive power
 K     GND               Ground for back light
-\endverbatim	
- *	
- * If you want to change pinout, do this in your defines.h file with lines below and set your own settings:
- *	
-\code
-//RS - Register select pin
-#define HD44780_RS_PORT     GPIOB
-#define HD44780_RS_PIN      GPIO_PIN_2
-//E - Enable pin
-#define HD44780_E_PORT      GPIOB
-#define HD44780_E_PIN       GPIO_PIN_7
-//D4 - Data 4 pin
-#define HD44780_D4_PORT     GPIOC
-#define HD44780_D4_PIN      GPIO_PIN_12
-//D5 - Data 5 pin
-#define HD44780_D5_PORT     GPIOC
-#define HD44780_D5_PIN      GPIO_PIN_13
-//D6 - Data 6 pin
-#define HD44780_D6_PORT     GPIOB
-#define HD44780_D6_PIN      GPIO_PIN_12
-//D7 - Data 7 pin
-#define HD44780_D7_PORT     GPIOB
-#define HD44780_D7_PIN      GPIO_PIN_13
-\endcode
- *
- * \par Changelog
- *
-\verbatim
- Version 1.0
-  - First release
-\endverbatim
- *
- * \par Dependencies
- *
-\verbatim
- - STM32Fxxx HAL
- - defines.h
- - TM DELAY
- - TM GPIO
-\endverbatim
+*/
+#include <stdint.h>
+#include "stm32f1xx_hal.h"
+#include "cmsis_os.h"
+#include "stdlib.h"
+#include "string.h"
+
+
+// Длина строки дисплея
+#define LENGTH_OF_LINE_LCD    	16
+// Количество строк дисплея
+#define NUMBER_OF_LINES_LCD   	2
+// Текст, который будет выводиться на дисплей во время обновления
+#define UPDATE_TEXT				"Идёт обновление!"
+// Демо-текст на первой строчке дисплея
+#define DEMO_TEXT_1             "Демо текст 1"
+// Демо-текст на второй строчке дисплея
+#define DEMO_TEXT_2             "Demo text 2"
+// Длина демо-текста №1
+#define LEN_DEMO_TEXT_1         strlen(DEMO_TEXT_1)
+// Длина демо-текста №2
+#define LEN_DEMO_TEXT_2         strlen(DEMO_TEXT_2)
+// Длина текста, выводимого во время обновления
+#define LEN_UPDATE_TEXT			strlen(UPDATE_TEXT)
+
+/* Pin defENABLEions */
+#define HD44780_RS_LOW              HAL_GPIO_WritePin(HD44780_RS_PORT, HD44780_RS_PIN, GPIO_PIN_RESET)
+#define HD44780_RS_HIGH             HAL_GPIO_WritePin(HD44780_RS_PORT, HD44780_RS_PIN, GPIO_PIN_SET)
+#define HD44780_E_LOW               HAL_GPIO_WritePin(HD44780_E_PORT, HD44780_E_PIN, GPIO_PIN_RESET)
+#define HD44780_E_HIGH              HAL_GPIO_WritePin(HD44780_E_PORT, HD44780_E_PIN, GPIO_PIN_SET)
+
+#define HD44780_E_BLINK             HD44780_E_HIGH; HD44780_Delay(20); HD44780_E_LOW; HD44780_Delay(20)
+#define HD44780_Delay(x)            osDelay(x)
+
+/* Commands*/
+#define HD44780_CLEARDISPLAY        0x01
+#define HD44780_RETURNHOME          0x02
+#define HD44780_ENTRYMODESET        0x04
+#define HD44780_DISPLAYCONTROL      0x08
+#define HD44780_CURSORSHIFT         0x10
+#define HD44780_FUNCTIONSET         0x20
+#define HD44780_SETCGRAMADDR        0x40
+#define HD44780_SETDDRAMADDR        0x80
+
+/* Flags for display entry mode */
+#define HD44780_ENTRYRIGHT          0x00
+#define HD44780_ENTRYLEFT           0x02
+#define HD44780_ENTRYSHIFTINCREMENT 0x01
+#define HD44780_ENTRYSHIFTDECREMENT 0x00
+
+/* Flags for display on/off control */
+#define HD44780_DISPLAYON           0x04
+#define HD44780_CURSORON            0x02
+#define HD44780_BLINKON             0x01
+
+/* Flags for display/cursor shift */
+#define HD44780_DISPLAYMOVE         0x08
+#define HD44780_CURSORMOVE          0x00
+#define HD44780_MOVERIGHT           0x04
+#define HD44780_MOVELEFT            0x00
+
+/* Flags for function set */
+#define HD44780_8BITMODE            0x10
+#define HD44780_4BITMODE            0x00
+#define HD44780_2LINE               0x08
+#define HD44780_1LINE               0x00
+#define HD44780_5x10DOTS            0x04
+#define HD44780_5x8DOTS             0x00
+
+/* 4-х канальный режим управления LCD */
+/* Управляющие контакты могут быть перезаписаны */
+/* RS - Register select pin */
+#ifndef HD44780_RS_PIN
+#define HD44780_RS_PORT				GPIOA
+#define HD44780_RS_PIN				GPIO_PIN_10
+#endif
+/* E - Enable pin */
+#ifndef HD44780_E_PIN
+#define HD44780_E_PORT				GPIOA
+#define HD44780_E_PIN				GPIO_PIN_9
+#endif
+/* Выводы данных */
+/* D4 - Data 4 pin */
+#ifndef HD44780_D4_PIN
+#define HD44780_D4_PORT				GPIOA
+#define HD44780_D4_PIN				GPIO_PIN_8
+#endif
+/* D5 - Data 5 pin */
+#ifndef HD44780_D5_PIN
+#define HD44780_D5_PORT				GPIOC
+#define HD44780_D5_PIN				GPIO_PIN_9
+#endif
+/* D6 - Data 6 pin */
+#ifndef HD44780_D6_PIN
+#define HD44780_D6_PORT				GPIOC
+#define HD44780_D6_PIN				GPIO_PIN_8
+#endif
+/* D7 - Data 7 pin */
+#ifndef HD44780_D7_PIN
+#define HD44780_D7_PORT				GPIOC
+#define HD44780_D7_PIN				GPIO_PIN_7
+#endif
+
+/**
+ * @brief  Sets pin(s) low
+ * @note   Defined as macro to get maximum speed using register access
+ * @param  GPIOx: GPIOx PORT where you want to set pin low
+ * @param  GPIO_Pin: Select GPIO pin(s). You can select more pins with | (OR) operator to set them low
+ * @retval None
  */
-#ifdef LED_MATRIX_ENABLE
+#define TM_GPIO_SetPinLow(GPIOx, GPIO_Pin)			((GPIOx)->BSRR = (uint32_t)(((uint32_t)GPIO_Pin) << 16))
+
+/**
+ * @brief  Sets pin(s) high
+ * @note   Defined as macro to get maximum speed using register access
+ * @param  GPIOx: GPIOx PORT where you want to set pin high
+ * @param  GPIO_Pin: Select GPIO pin(s). You can select more pins with | (OR) operator to set them high
+ * @retval None
+ */
+#define TM_GPIO_SetPinHigh(GPIOx, GPIO_Pin)			((GPIOx)->BSRR = (uint32_t)(GPIO_Pin))
+
+/**
+ * @brief  Sets pin(s) value
+ * @note   Defined as macro to get maximum speed using register access
+ * @param  GPIOx: GPIOx PORT where you want to set pin value
+ * @param  GPIO_Pin: Select GPIO pin(s). You can select more pins with | (OR) operator to set them value
+ * @param  val: If parameter is 0 then pin will be low, otherwise high
+ * @retval None
+ */
+#define TM_GPIO_SetPinValue(GPIOx, GPIO_Pin, val)	((val) ? TM_GPIO_SetPinHigh(GPIOx, GPIO_Pin) : TM_GPIO_SetPinLow(GPIOx, GPIO_Pin))
+
+/**
+ * @brief  Toggles pin(s)
+ * @note   Defined as macro to get maximum speed using register access
+ * @param  GPIOx: GPIOx PORT where you want to toggle pin value
+ * @param  GPIO_Pin: Select GPIO pin(s). You can select more pins with | (OR) operator to toggle them all at a time
+ * @retval None
+ */
+#define TM_GPIO_TogglePinValue(GPIOx, GPIO_Pin)		((GPIOx)->ODR ^= (GPIO_Pin))
+
+/**
+ * @brief  Sets value to entire GPIO PORT
+ * @note   Defined as macro to get maximum speed using register access
+ * @param  GPIOx: GPIOx PORT where you want to set value
+ * @param  value: Value for GPIO OUTPUT data
+ * @retval None
+ */
+#define TM_GPIO_SetPortValue(GPIOx, value)			((GPIOx)->ODR = (value))
+
+/**
+ * @brief  Gets input data bit
+ * @note   Defined as macro to get maximum speed using register access
+ * @param  GPIOx: GPIOx PORT where you want to read input bit value
+ * @param  GPIO_Pin: GPIO pin where you want to read value
+ * @retval 1 in case pin is high, or 0 if low
+ */
+#define TM_GPIO_GetInputPinValue(GPIOx, GPIO_Pin)	(((GPIOx)->IDR & (GPIO_Pin)) == 0 ? 0 : 1)
+
+/**
+ * @brief  Gets output data bit
+ * @note   Defined as macro to get maximum speed using register access
+ * @param  GPIOx: GPIOx PORT where you want to read output bit value
+ * @param  GPIO_Pin: GPIO pin where you want to read value
+ * @retval 1 in case pin is high, or 0 if low
+ */
+#define TM_GPIO_GetOutputPinValue(GPIOx, GPIO_Pin)	(((GPIOx)->ODR & (GPIO_Pin)) == 0 ? 0 : 1)
+
+/**
+ * @brief  Gets input value from entire GPIO PORT
+ * @note   Defined as macro to get maximum speed using register access
+ * @param  GPIOx: GPIOx PORT where you want to read input data value
+ * @retval Entire PORT INPUT register
+ */
+#define TM_GPIO_GetPortInputValue(GPIOx)			((GPIOx)->IDR)
+
+/**
+ * @brief  Gets output value from entire GPIO PORT
+ * @note   Defined as macro to get maximum speed using register access
+ * @param  GPIOx: GPIOx PORT where you want to read output data value
+ * @retval Entire PORT OUTPUT register
+ */
+#define TM_GPIO_GetPortOutputValue(GPIOx)			((GPIOx)->ODR)
 
 /**
  * @defgroup TM_HD44780_Macros
@@ -233,17 +373,14 @@ void TM_HD44780_PutCustom(uint8_t x, uint8_t y, uint8_t location);
 
 void TM_HD44780_Puts_test(uint8_t x, uint8_t y, uint8_t *str, uint8_t len);
 
-
-
-#endif
 /**
  * @}
  */
- 
+
 /**
  * @}
  */
- 
+
 /**
  * @}
  */

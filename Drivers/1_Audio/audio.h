@@ -8,6 +8,14 @@
 #ifndef AUDIO_H_
 #define AUDIO_H_
 
+#include "stm32f1xx_hal.h"
+#include <speex.h>
+
+// Количество блоков по 20 байт для тестового аудиофайла("Соединение со спутником...")
+#define FRAME_SIZE              160
+// Количество байт в одном блоке (фрейме)
+#define ENCODED_FRAME_SIZE      20
+
 /* @brief Brief of PlayMessage
  *
  * Функция воспроизведения аудиофайла

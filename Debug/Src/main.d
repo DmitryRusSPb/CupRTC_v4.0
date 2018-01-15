@@ -51,17 +51,13 @@ Src/main.o: ../Src/main.c \
  /home/user/workspaceSTM32/CupRTC_v4.0/Inc/usart.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Inc/gpio.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Inc/defines.h \
- /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/4_WS2812B/ws2812b.c \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/4_WS2812B/ws2812b.h \
- /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/2_LCD\ for\ STM32F103RET/tm_stm32_hd44780.c \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/2_LCD\ for\ STM32F103RET/tm_stm32_hd44780.h \
- /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/1_Audio/audio.c \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/1_Audio/audio.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/1_Audio/STM32F10x_Speex_Lib/include/speex/speex.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/1_Audio/STM32F10x_Speex_Lib/include/speex/speex_bits.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/1_Audio/STM32F10x_Speex_Lib/include/speex/speex_types.h \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/1_Audio/STM32F10x_Speex_Lib/STM32/include/speex/speex_config_types.h \
- /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/3_LedMatrix/max7219.c \
  /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/3_LedMatrix/max7219.h
 
 /home/user/workspaceSTM32/CupRTC_v4.0/Inc/main.h:
@@ -168,15 +164,9 @@ Src/main.o: ../Src/main.c \
 
 /home/user/workspaceSTM32/CupRTC_v4.0/Inc/defines.h:
 
-/home/user/workspaceSTM32/CupRTC_v4.0/Drivers/4_WS2812B/ws2812b.c:
-
 /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/4_WS2812B/ws2812b.h:
 
-/home/user/workspaceSTM32/CupRTC_v4.0/Drivers/2_LCD\ for\ STM32F103RET/tm_stm32_hd44780.c:
-
 /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/2_LCD\ for\ STM32F103RET/tm_stm32_hd44780.h:
-
-/home/user/workspaceSTM32/CupRTC_v4.0/Drivers/1_Audio/audio.c:
 
 /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/1_Audio/audio.h:
 
@@ -187,7 +177,5 @@ Src/main.o: ../Src/main.c \
 /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/1_Audio/STM32F10x_Speex_Lib/include/speex/speex_types.h:
 
 /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/1_Audio/STM32F10x_Speex_Lib/STM32/include/speex/speex_config_types.h:
-
-/home/user/workspaceSTM32/CupRTC_v4.0/Drivers/3_LedMatrix/max7219.c:
 
 /home/user/workspaceSTM32/CupRTC_v4.0/Drivers/3_LedMatrix/max7219.h:

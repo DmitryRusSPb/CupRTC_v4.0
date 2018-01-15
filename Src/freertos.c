@@ -9,7 +9,7 @@
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
-  * Copyright (c) 2017 STMicroelectronics International N.V. 
+  * Copyright (c) 2018 STMicroelectronics International N.V. 
   * All rights reserved.
   *
   * Redistribution and use in source and binary forms, with or without 
@@ -53,6 +53,24 @@
 
 /* USER CODE BEGIN Includes */     
 #include "defines.h"
+
+#ifdef WS2812B_ENABLE
+#include "ws2812b.h"
+#endif
+
+#ifdef LCD_ENABLE
+#include "tm_stm32_hd44780.h"
+#endif
+
+#ifdef AUDIO_ENABLE
+#include "audio.h"
+#include "spx.h"
+#endif
+
+#ifdef LED_MATRIX_ENABLE
+#include "max7219.h"
+#endif
+
 #include "otherFunctions.h"
 
 /* USER CODE END Includes */
@@ -68,12 +86,16 @@ osThreadId RGBws2812bHandle;
 osThreadId USARTHandle;
 
 extern UART_HandleTypeDef huart2;
+extern DAC_HandleTypeDef hdac;
+extern TIM_HandleTypeDef htim6;
 
 /*----------------------------------------------------------------------------*/
 /*--------------------------------STATUS--------------------------------------*/
 /*----------------------------------------------------------------------------*/
 // Здесь хранится состояние кнопки
 extern uint8_t playSound;
+
+extern uint8_t eightbit[766][3];
 
 /*----------------------------------------------------------------------------*/
 /*--------------------------------FLASH---------------------------------------*/
@@ -82,22 +104,9 @@ extern uint8_t playSound;
 uint32_t addressDes = START_FLASH_PAGE;
 // Размер(в байтах) всех полученных данных
 uint16_t allDataSize;
-// Число страниц флеш памяти
-uint8_t pageNum = 0;
-// Сообщает нам о том, была ли уже очищена первая страница
-uint8_t firstErase = 0;
-
-#ifdef LCD_ON
-// Массив, хранящий кодировку для кириллицы
-uint8_t rusText[66];
-#endif
-
-#ifdef WS2812B_ON
-uint8_t LED_BYTE_Buffer[QUANTITY_OF_LED*24 + TRAILING_BYTES];
-#endif
 
 // Режим работы кубка. 0-нормальная работа, 1-демо режим, 2-режим обновления
-uint8_t systemMode;
+extern uint8_t systemMode;
 
 // Массив, хранящий принимаемые данные до парсинга
 uint8_t dataBuffer[60];
@@ -156,17 +165,17 @@ void MX_FREERTOS_Init(void) {
 		osThreadDef(Button, StartButtonTask, osPriorityIdle, 0, 256);
 		ButtonHandle = osThreadCreate(osThread(Button), NULL);
 
-#ifdef	LED_ON
+#ifdef	LED_ENABLE
 		/* definition and creation of LEDmatrix */
 		osThreadDef(LEDmatrix, StartLEDmatrixTask, osPriorityIdle, 0, 256);
 		LEDmatrixHandle = osThreadCreate(osThread(LEDmatrix), NULL);
 #endif
-#ifdef	AUDIO_ON
+#ifdef	AUDIO_ENABLE
 		/* definition and creation of AudioMessage */
 		osThreadDef(AudioMessage, StartAudioMessageTask, osPriorityIdle, 0, 256);
 		AudioMessageHandle = osThreadCreate(osThread(AudioMessage), NULL);
 #endif
-#ifdef	WS2812B_ON
+#ifdef	WS2812B_ENABLE
 		/* definition and creation of RGBws2812b */
 		osThreadDef(RGBws2812b, StartRGBws2812bTask, osPriorityIdle, 0, 256);
 		RGBws2812bHandle = osThreadCreate(osThread(RGBws2812b), NULL);
@@ -203,7 +212,7 @@ void StartButtonTask(void const * argument)
 	// Создаем счётчик для фиксации времени нажатия кнопки
 	uint8_t pressTime;
 
-#ifdef LCD_ON
+#ifdef LCD_ENABLE
 	// Чистим экран
 	TM_HD44780_Clear();
 	// Если включен демо-режим, то показываем демо-сообщение,
@@ -238,7 +247,7 @@ void StartButtonTask(void const * argument)
 			{
 				playSound = 1;
 				osDelay(1000);
-#ifdef AUDIO_ON
+#ifdef AUDIO_ENABLE
 				vTaskResume(AudioMessageHandle);
 #endif
 				// Обнуляем счётчик нажатия кнопки
@@ -255,18 +264,18 @@ void StartLEDmatrixTask(void const * argument)
 {
 	/* USER CODE BEGIN StartLEDmatrixTask */
 
-#ifndef LED_MATRIX_ON
+#ifndef LED_MATRIX_ENABLE
 	vTaskDelete(NULL);
 #endif
 	/* Infinite loop */
 	for(;;)
 	{
-#ifdef LED_MATRIX_ON
+#ifdef LED_MATRIX_ENABLE
 		// Чистка LED матрицы от изображений
 		MAX729_Clean();
 		// Если включен демо режим, то крутим демо-анимацию
 		// Если демо-режим выключен, то показываем место+анимация
-		if(demoModeStatus)
+		if(systemMode == SYSTEM_MODE_DEMO)
 		{
 			while(1)
 			{
@@ -281,7 +290,7 @@ void StartLEDmatrixTask(void const * argument)
 		else
 		{
 			// Выводим место пока не будет нажата кнопка
-			switch (state)
+			switch (*(uint32_t*)START_FLASH_PAGE)
 			{
 			case 1:
 				while(DrawAll(1)) osDelay(1);
@@ -297,7 +306,7 @@ void StartLEDmatrixTask(void const * argument)
 				break;
 				// Пока сотояние кнопки не изменится на "выкл"
 				// крутим особую анимацию
-				while(buttonStatus) Draw((uint8_t*)symbols, 0);
+				while(playSound) Draw((uint8_t*)symbols, 0);
 			}
 		}
 #endif
@@ -310,7 +319,7 @@ void StartLEDmatrixTask(void const * argument)
 void StartAudioMessageTask(void const * argument)
 {
 	/* USER CODE BEGIN StartAudioMessageTask */
-#ifndef AUDIO_ON
+#ifndef AUDIO_ENABLE
 	vTaskDelete(NULL);
 #endif
 	/* Infinite loop */
@@ -318,7 +327,7 @@ void StartAudioMessageTask(void const * argument)
 	{
 		if(!playSound)
 			vTaskSuspend(NULL);
-#ifdef AUDIO_ON
+#ifdef AUDIO_ENABLE
 
 		// Включаем прерывания по таймеру
 		HAL_TIM_Base_Start_IT(&htim6);
@@ -326,9 +335,11 @@ void StartAudioMessageTask(void const * argument)
 		HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
 
 		// Если включен демо-режим, то включаем демо-запись
-		if(systemMode) PlayMessage(&spx_voice2[0], spx_frames2);
+		if(systemMode == SYSTEM_MODE_DEMO)
+			PlayMessage(&spx_voice2[0], spx_frames2);
 		// В противном случае проигрываем то, что мы записали в память
-		else PlayMessage((void*)SPEEX_address, *(uint32_t*)BLOCK_address);
+		else
+			PlayMessage((void*)SPEEX_address, *(uint32_t*)BLOCK_address);
 
 		// Выключаем прерывания по таймеру
 		HAL_TIM_Base_Stop_IT(&htim6);
@@ -347,14 +358,14 @@ void StartAudioMessageTask(void const * argument)
 void StartRGBws2812bTask(void const * argument)
 {
 	/* USER CODE BEGIN StartRGBws2812bTask */
-#ifndef WS2812B_ON
+#ifndef WS2812B_ENABLE
 	vTaskDelete(NULL);
 #endif
 
 	/* Infinite loop */
 	for(;;)
 	{
-#ifdef WS2812B_ON
+#ifdef WS2812B_ENABLE
 		/* first cycle through the colors on 2 LEDs chained together
 		 * last LED in the chain will receive first sent triplet
 		 * --> last LED in the chain will 'lead'
@@ -418,7 +429,7 @@ void StartUSARTTask(void const * argument)
 
 	uint8_t *ptrBuff;
 
-#ifdef LCD_ON
+#ifdef LCD_ENABLE
 	uint8_t updateLine;
 	// Чистим экран
 	TM_HD44780_Clear();
@@ -467,7 +478,7 @@ void StartUSARTTask(void const * argument)
 			// Парсим полученные данные
 			dataBufferPars = parsing((char*)dataBuffer, numBuff);
 
-#ifdef LCD_ON
+#ifdef LCD_ENABLE
 			// Полоска закрузки на LCD
 			// Если полоска достигла окончания строки дисплея, то...
 			if(!((updateLine + 1) % 17))

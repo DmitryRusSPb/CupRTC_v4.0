@@ -4,13 +4,13 @@
  *  Created on: 21 дек. 2017 г.
  *      Author: root
  */
-
-#ifdef LED_MATRIX_ENABLE
-
 #include "max7219.h"
 
 extern SPI_HandleTypeDef hspi2;
 extern uint8_t buttonStatus;
+
+uint16_t max7219DigitRegisters[8] =
+{0x01 << 8, 0x02 << 8, 0x03 << 8, 0x04 << 8, 0x05 << 8, 0x06 << 8, 0x07 << 8, 0x08 << 8};
 
 void sendData(uint16_t data)
 {
@@ -320,5 +320,3 @@ EXIT DrawAll(uint8_t state)
 	}
 	return NOT_TIME_TO_GO;
 }
-
-#endif

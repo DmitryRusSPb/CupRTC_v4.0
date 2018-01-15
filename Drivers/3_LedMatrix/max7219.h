@@ -17,6 +17,15 @@
  *   - ChipSelect from 0 to 1, on leading edge;
  */
 
+#include "stm32f1xx_hal.h"
+#include "cmsis_os.h"
+
+// Скорость прокрутки изображений на LED_MATRIX (больше значение == меньше скорость)
+#define SPEED                  	10
+// Ножка CS для подключения LED-матрицы
+#define PORT_NCC    			GPIOB
+#define PIN_NCC     			GPIO_PIN_12
+
 // Перечисление для выхода из функций анимации LED-Matrix 8х8 в случае, если требуется
 // выводить какое-то совершенно другое изображение
 typedef enum
@@ -128,9 +137,6 @@ const static uint8_t symbols3Gor[15][8]=
 		{0x00,0x80,0x00,0x00,0x00,0x80,0x00,0x00},
 		{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
 };
-
-uint16_t max7219DigitRegisters[8] =
-{0x01 << 8, 0x02 << 8, 0x03 << 8, 0x04 << 8, 0x05 << 8, 0x06 << 8, 0x07 << 8, 0x08 << 8};
 
 const static uint8_t lenAnim1 = 105;
 const static uint8_t anim1[][8]=

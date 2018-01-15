@@ -4,7 +4,7 @@
   * @brief   Interrupt Service Routines.
   ******************************************************************************
   *
-  * COPYRIGHT(c) 2017 STMicroelectronics
+  * COPYRIGHT(c) 2018 STMicroelectronics
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -37,7 +37,7 @@
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN 0 */
-#ifdef AUDIO_ON
+#ifdef AUDIO_ENABLE
 volatile int i=0;
 extern __IO uint8_t startDecoding;
 extern __IO int16_t *outBuff;
@@ -201,7 +201,7 @@ void TIM2_IRQHandler(void)
 void TIM6_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM6_IRQn 0 */
-#ifdef AUDIO_ON
+#ifdef AUDIO_ENABLE
 	uint16_t tmp;
 
 	// Сбрасываем флаг прерывания

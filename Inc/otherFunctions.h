@@ -6,8 +6,8 @@
  */
 
 #include "stm32f1xx_hal.h"
+#include "stm32f1xx_hal_flash.h"
 #include "cmsis_os.h"
-
 #include "defines.h"
 #include "conspeex.h"
 
@@ -48,5 +48,7 @@ GPIO_PinState AntiContactBounce(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 AnswerStatus SU_FLASH_Save_User_Data(RecData parsData, uint8_t numReceivedBytes);
 
 void WriteToFlash(uint32_t writeAddress, uint32_t sizeData, uint8_t *data);
+
+void FLASH_PageErase(uint32_t PageAddress);
 
 /* OTHERFUNCTIONS_H_ */
